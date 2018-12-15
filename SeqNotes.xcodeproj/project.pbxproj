@@ -7,47 +7,57 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		FB6E800221C45C5700F53249 /* ShowSeqVC.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6E7FEF21C45C5600F53249 /* ShowSeqVC.m */; };
-		FB6E800321C45C5700F53249 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6E7FF021C45C5600F53249 /* main.m */; };
-		FB6E800421C45C5700F53249 /* MenuVC.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6E7FF121C45C5600F53249 /* MenuVC.m */; };
-		FB6E800521C45C5700F53249 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = FB6E7FF221C45C5600F53249 /* Default-568h@2x.png */; };
-		FB6E800621C45C5700F53249 /* Sequence.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6E7FF321C45C5600F53249 /* Sequence.m */; };
-		FB6E800721C45C5700F53249 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6E7FF421C45C5600F53249 /* AppDelegate.m */; };
-		FB6E800821C45C5700F53249 /* Neil notes in Resources */ = {isa = PBXBuildFile; fileRef = FB6E7FF521C45C5600F53249 /* Neil notes */; };
-		FB6E800A21C45C5700F53249 /* UICircularProgressView.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6E7FF821C45C5600F53249 /* UICircularProgressView.m */; };
-		FB6E800B21C45C5700F53249 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FB6E7FFB21C45C5700F53249 /* Assets.xcassets */; };
-		FB6E800C21C45C5700F53249 /* Base.lproj in Resources */ = {isa = PBXBuildFile; fileRef = FB6E800021C45C5700F53249 /* Base.lproj */; };
-		FB6E800D21C45C5700F53249 /* BrowseOEISVC.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6E800121C45C5700F53249 /* BrowseOEISVC.m */; };
-		FB6E801121C45E8C00F53249 /* Music1.txt in Resources */ = {isa = PBXBuildFile; fileRef = FB6E801021C45E8C00F53249 /* Music1.txt */; };
-		FB6E801721C467CB00F53249 /* LaunchStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FB6E801621C467CB00F53249 /* LaunchStoryboard.storyboard */; };
+		FB6E2A7621C5869E0009AE83 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6E2A5A21C5869D0009AE83 /* main.m */; };
+		FB6E2A7721C5869E0009AE83 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FB6E2A5B21C5869D0009AE83 /* Assets.xcassets */; };
+		FB6E2A7821C5869E0009AE83 /* UICircularProgressView.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6E2A5D21C5869D0009AE83 /* UICircularProgressView.m */; };
+		FB6E2A7921C5869E0009AE83 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6E2A5E21C5869D0009AE83 /* AppDelegate.m */; };
+		FB6E2A7A21C5869E0009AE83 /* MenuVC.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6E2A6021C5869D0009AE83 /* MenuVC.m */; };
+		FB6E2A7B21C5869E0009AE83 /* BrowseOEISVC.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6E2A6121C5869D0009AE83 /* BrowseOEISVC.m */; };
+		FB6E2A7C21C5869E0009AE83 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = FB6E2A6221C5869D0009AE83 /* Info.plist */; };
+		FB6E2A7D21C5869E0009AE83 /* Base.lproj in Resources */ = {isa = PBXBuildFile; fileRef = FB6E2A6321C5869D0009AE83 /* Base.lproj */; };
+		FB6E2A7E21C5869E0009AE83 /* LaunchStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FB6E2A6521C5869D0009AE83 /* LaunchStoryboard.storyboard */; };
+		FB6E2A7F21C5869E0009AE83 /* Sequence.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6E2A6921C5869D0009AE83 /* Sequence.m */; };
+		FB6E2A8021C5869E0009AE83 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = FB6E2A6B21C5869D0009AE83 /* Default-568h@2x.png */; };
+		FB6E2A8121C5869E0009AE83 /* Music1.txt in Resources */ = {isa = PBXBuildFile; fileRef = FB6E2A6C21C5869D0009AE83 /* Music1.txt */; };
+		FB6E2A8221C5869E0009AE83 /* Neil notes in Resources */ = {isa = PBXBuildFile; fileRef = FB6E2A6D21C5869D0009AE83 /* Neil notes */; };
+		FB6E2A8321C5869E0009AE83 /* ShowSeqVC.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6E2A7521C5869D0009AE83 /* ShowSeqVC.m */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		FB6E2A7221C5869D0009AE83 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = FB6E2A6E21C5869D0009AE83 /* SeqNotes.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = FB6E7FD321C45C0F00F53249;
+			remoteInfo = SeqNotes;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
-		FB0E596721C5617D003C4F5F /* Base.lproj */ = {isa = PBXFileReference; lastKnownFileType = file; name = Base.lproj; path = ../../../../Xcode/SeqNotes/SeqNotes/Base.lproj; sourceTree = "<group>"; };
-		FB0E596821C56183003C4F5F /* Base.lproj */ = {isa = PBXFileReference; lastKnownFileType = file; name = Base.lproj; path = ../../../../Xcode/SeqNotes/SeqNotes/Base.lproj; sourceTree = "<group>"; };
+		FB6E2A5A21C5869D0009AE83 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = ../poot/main.m; sourceTree = "<group>"; };
+		FB6E2A5B21C5869D0009AE83 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = ../poot/Assets.xcassets; sourceTree = "<group>"; };
+		FB6E2A5C21C5869D0009AE83 /* UICircularProgressView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UICircularProgressView.h; path = ../poot/UICircularProgressView.h; sourceTree = "<group>"; };
+		FB6E2A5D21C5869D0009AE83 /* UICircularProgressView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = UICircularProgressView.m; path = ../poot/UICircularProgressView.m; sourceTree = "<group>"; };
+		FB6E2A5E21C5869D0009AE83 /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AppDelegate.m; path = ../poot/AppDelegate.m; sourceTree = "<group>"; };
+		FB6E2A5F21C5869D0009AE83 /* SeqNotes.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; name = SeqNotes.entitlements; path = ../poot/SeqNotes.entitlements; sourceTree = "<group>"; };
+		FB6E2A6021C5869D0009AE83 /* MenuVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MenuVC.m; path = ../poot/MenuVC.m; sourceTree = "<group>"; };
+		FB6E2A6121C5869D0009AE83 /* BrowseOEISVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = BrowseOEISVC.m; path = ../poot/BrowseOEISVC.m; sourceTree = "<group>"; };
+		FB6E2A6221C5869D0009AE83 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = ../poot/Info.plist; sourceTree = "<group>"; };
+		FB6E2A6321C5869D0009AE83 /* Base.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Base.lproj; path = ../poot/Base.lproj; sourceTree = "<group>"; };
+		FB6E2A6421C5869D0009AE83 /* Sequence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Sequence.h; path = ../poot/Sequence.h; sourceTree = "<group>"; };
+		FB6E2A6521C5869D0009AE83 /* LaunchStoryboard.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchStoryboard.storyboard; path = ../poot/LaunchStoryboard.storyboard; sourceTree = "<group>"; };
+		FB6E2A6621C5869D0009AE83 /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = ../poot/AppDelegate.h; sourceTree = "<group>"; };
+		FB6E2A6721C5869D0009AE83 /* BrowseOEISVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BrowseOEISVC.h; path = ../poot/BrowseOEISVC.h; sourceTree = "<group>"; };
+		FB6E2A6821C5869D0009AE83 /* Defines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Defines.h; path = ../poot/Defines.h; sourceTree = "<group>"; };
+		FB6E2A6921C5869D0009AE83 /* Sequence.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Sequence.m; path = ../poot/Sequence.m; sourceTree = "<group>"; };
+		FB6E2A6A21C5869D0009AE83 /* MenuVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MenuVC.h; path = ../poot/MenuVC.h; sourceTree = "<group>"; };
+		FB6E2A6B21C5869D0009AE83 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "Default-568h@2x.png"; path = "../poot/Default-568h@2x.png"; sourceTree = "<group>"; };
+		FB6E2A6C21C5869D0009AE83 /* Music1.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = Music1.txt; path = ../poot/Music1.txt; sourceTree = "<group>"; };
+		FB6E2A6D21C5869D0009AE83 /* Neil notes */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "Neil notes"; path = "../poot/Neil notes"; sourceTree = "<group>"; };
+		FB6E2A6E21C5869D0009AE83 /* SeqNotes.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SeqNotes.xcodeproj; path = ../poot/SeqNotes.xcodeproj; sourceTree = "<group>"; };
+		FB6E2A7421C5869D0009AE83 /* ShowSeqVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ShowSeqVC.h; path = ../poot/ShowSeqVC.h; sourceTree = "<group>"; };
+		FB6E2A7521C5869D0009AE83 /* ShowSeqVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ShowSeqVC.m; path = ../poot/ShowSeqVC.m; sourceTree = "<group>"; };
 		FB6E7FD321C45C0F00F53249 /* SeqNotes.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SeqNotes.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		FB6E7FEF21C45C5600F53249 /* ShowSeqVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ShowSeqVC.m; path = SeqNotes/ShowSeqVC.m; sourceTree = "<group>"; };
-		FB6E7FF021C45C5600F53249 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = SeqNotes/main.m; sourceTree = "<group>"; };
-		FB6E7FF121C45C5600F53249 /* MenuVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MenuVC.m; path = SeqNotes/MenuVC.m; sourceTree = "<group>"; };
-		FB6E7FF221C45C5600F53249 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "Default-568h@2x.png"; path = "SeqNotes/Default-568h@2x.png"; sourceTree = "<group>"; };
-		FB6E7FF321C45C5600F53249 /* Sequence.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Sequence.m; path = SeqNotes/Sequence.m; sourceTree = "<group>"; };
-		FB6E7FF421C45C5600F53249 /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AppDelegate.m; path = SeqNotes/AppDelegate.m; sourceTree = "<group>"; };
-		FB6E7FF521C45C5600F53249 /* Neil notes */ = {isa = PBXFileReference; lastKnownFileType = text; name = "Neil notes"; path = "SeqNotes/Neil notes"; sourceTree = "<group>"; };
-		FB6E7FF621C45C5600F53249 /* ShowSeqVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ShowSeqVC.h; path = SeqNotes/ShowSeqVC.h; sourceTree = "<group>"; };
-		FB6E7FF821C45C5600F53249 /* UICircularProgressView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = UICircularProgressView.m; path = SeqNotes/UICircularProgressView.m; sourceTree = "<group>"; };
-		FB6E7FF921C45C5700F53249 /* BrowseOEISVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BrowseOEISVC.h; path = SeqNotes/BrowseOEISVC.h; sourceTree = "<group>"; };
-		FB6E7FFA21C45C5700F53249 /* MenuVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MenuVC.h; path = SeqNotes/MenuVC.h; sourceTree = "<group>"; };
-		FB6E7FFB21C45C5700F53249 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = SeqNotes/Assets.xcassets; sourceTree = "<group>"; };
-		FB6E7FFC21C45C5700F53249 /* Defines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Defines.h; path = SeqNotes/Defines.h; sourceTree = "<group>"; };
-		FB6E7FFD21C45C5700F53249 /* Sequence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Sequence.h; path = SeqNotes/Sequence.h; sourceTree = "<group>"; };
-		FB6E7FFE21C45C5700F53249 /* UICircularProgressView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UICircularProgressView.h; path = SeqNotes/UICircularProgressView.h; sourceTree = "<group>"; };
-		FB6E7FFF21C45C5700F53249 /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = SeqNotes/AppDelegate.h; sourceTree = "<group>"; };
-		FB6E800021C45C5700F53249 /* Base.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Base.lproj; path = ../../../../Xcode/SeqNotes/SeqNotes/Base.lproj; sourceTree = "<group>"; };
-		FB6E800121C45C5700F53249 /* BrowseOEISVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = BrowseOEISVC.m; path = SeqNotes/BrowseOEISVC.m; sourceTree = "<group>"; };
-		FB6E800E21C45DD600F53249 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; name = Info.plist; path = SeqNotes/Info.plist; sourceTree = "<group>"; };
-		FB6E801021C45E8C00F53249 /* Music1.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = Music1.txt; path = SeqNotes/Music1.txt; sourceTree = "<group>"; };
-		FB6E801521C4659B00F53249 /* SeqNotes.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = SeqNotes.entitlements; path = SeqNotes/SeqNotes.entitlements; sourceTree = "<group>"; };
-		FB6E801621C467CB00F53249 /* LaunchStoryboard.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = LaunchStoryboard.storyboard; path = SeqNotes/LaunchStoryboard.storyboard; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -61,33 +71,40 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		FB6E2A6F21C5869D0009AE83 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				FB6E2A7321C5869D0009AE83 /* SeqNotes.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		FB6E7FCA21C45C0F00F53249 = {
 			isa = PBXGroup;
 			children = (
-				FB6E7FFC21C45C5700F53249 /* Defines.h */,
-				FB6E7FFF21C45C5700F53249 /* AppDelegate.h */,
-				FB6E7FF421C45C5600F53249 /* AppDelegate.m */,
-				FB6E7FFA21C45C5700F53249 /* MenuVC.h */,
-				FB6E7FF121C45C5600F53249 /* MenuVC.m */,
-				FB6E7FFD21C45C5700F53249 /* Sequence.h */,
-				FB6E7FF321C45C5600F53249 /* Sequence.m */,
-				FB6E7FF621C45C5600F53249 /* ShowSeqVC.h */,
-				FB6E7FEF21C45C5600F53249 /* ShowSeqVC.m */,
-				FB6E7FF921C45C5700F53249 /* BrowseOEISVC.h */,
-				FB6E800121C45C5700F53249 /* BrowseOEISVC.m */,
-				FB6E7FFE21C45C5700F53249 /* UICircularProgressView.h */,
-				FB6E7FF821C45C5600F53249 /* UICircularProgressView.m */,
-				FB6E800E21C45DD600F53249 /* Info.plist */,
-				FB6E7FF221C45C5600F53249 /* Default-568h@2x.png */,
-				FB6E7FF021C45C5600F53249 /* main.m */,
-				FB6E801021C45E8C00F53249 /* Music1.txt */,
-				FB6E801521C4659B00F53249 /* SeqNotes.entitlements */,
-				FB6E801621C467CB00F53249 /* LaunchStoryboard.storyboard */,
-				FB6E7FFB21C45C5700F53249 /* Assets.xcassets */,
-				FB0E596721C5617D003C4F5F /* Base.lproj */,
-				FB6E7FF521C45C5600F53249 /* Neil notes */,
-				FB0E596821C56183003C4F5F /* Base.lproj */,
-				FB6E7FD521C45C0F00F53249 /* SeqNotes */,
+				FB6E2A6621C5869D0009AE83 /* AppDelegate.h */,
+				FB6E2A5E21C5869D0009AE83 /* AppDelegate.m */,
+				FB6E2A5B21C5869D0009AE83 /* Assets.xcassets */,
+				FB6E2A6321C5869D0009AE83 /* Base.lproj */,
+				FB6E2A6721C5869D0009AE83 /* BrowseOEISVC.h */,
+				FB6E2A6121C5869D0009AE83 /* BrowseOEISVC.m */,
+				FB6E2A6B21C5869D0009AE83 /* Default-568h@2x.png */,
+				FB6E2A6821C5869D0009AE83 /* Defines.h */,
+				FB6E2A6221C5869D0009AE83 /* Info.plist */,
+				FB6E2A6521C5869D0009AE83 /* LaunchStoryboard.storyboard */,
+				FB6E2A5A21C5869D0009AE83 /* main.m */,
+				FB6E2A6A21C5869D0009AE83 /* MenuVC.h */,
+				FB6E2A6021C5869D0009AE83 /* MenuVC.m */,
+				FB6E2A6C21C5869D0009AE83 /* Music1.txt */,
+				FB6E2A6D21C5869D0009AE83 /* Neil notes */,
+				FB6E2A5F21C5869D0009AE83 /* SeqNotes.entitlements */,
+				FB6E2A6E21C5869D0009AE83 /* SeqNotes.xcodeproj */,
+				FB6E2A6421C5869D0009AE83 /* Sequence.h */,
+				FB6E2A6921C5869D0009AE83 /* Sequence.m */,
+				FB6E2A7421C5869D0009AE83 /* ShowSeqVC.h */,
+				FB6E2A7521C5869D0009AE83 /* ShowSeqVC.m */,
+				FB6E2A5C21C5869D0009AE83 /* UICircularProgressView.h */,
+				FB6E2A5D21C5869D0009AE83 /* UICircularProgressView.m */,
 				FB6E7FD421C45C0F00F53249 /* Products */,
 				FB6E801221C4656000F53249 /* Frameworks */,
 			);
@@ -99,14 +116,6 @@
 				FB6E7FD321C45C0F00F53249 /* SeqNotes.app */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		FB6E7FD521C45C0F00F53249 /* SeqNotes */ = {
-			isa = PBXGroup;
-			children = (
-				FB6E800021C45C5700F53249 /* Base.lproj */,
-			);
-			path = SeqNotes;
 			sourceTree = "<group>";
 		};
 		FB6E801221C4656000F53249 /* Frameworks */ = {
@@ -169,6 +178,12 @@
 			mainGroup = FB6E7FCA21C45C0F00F53249;
 			productRefGroup = FB6E7FD421C45C0F00F53249 /* Products */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = FB6E2A6F21C5869D0009AE83 /* Products */;
+					ProjectRef = FB6E2A6E21C5869D0009AE83 /* SeqNotes.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				FB6E7FD221C45C0F00F53249 /* SeqNotes */,
@@ -176,17 +191,28 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXReferenceProxy section */
+		FB6E2A7321C5869D0009AE83 /* SeqNotes.app */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.application;
+			path = SeqNotes.app;
+			remoteRef = FB6E2A7221C5869D0009AE83 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
+
 /* Begin PBXResourcesBuildPhase section */
 		FB6E7FD121C45C0F00F53249 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FB6E800521C45C5700F53249 /* Default-568h@2x.png in Resources */,
-				FB6E800821C45C5700F53249 /* Neil notes in Resources */,
-				FB6E801121C45E8C00F53249 /* Music1.txt in Resources */,
-				FB6E800C21C45C5700F53249 /* Base.lproj in Resources */,
-				FB6E800B21C45C5700F53249 /* Assets.xcassets in Resources */,
-				FB6E801721C467CB00F53249 /* LaunchStoryboard.storyboard in Resources */,
+				FB6E2A7C21C5869E0009AE83 /* Info.plist in Resources */,
+				FB6E2A7D21C5869E0009AE83 /* Base.lproj in Resources */,
+				FB6E2A8221C5869E0009AE83 /* Neil notes in Resources */,
+				FB6E2A7E21C5869E0009AE83 /* LaunchStoryboard.storyboard in Resources */,
+				FB6E2A8021C5869E0009AE83 /* Default-568h@2x.png in Resources */,
+				FB6E2A8121C5869E0009AE83 /* Music1.txt in Resources */,
+				FB6E2A7721C5869E0009AE83 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -197,13 +223,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FB6E800421C45C5700F53249 /* MenuVC.m in Sources */,
-				FB6E800321C45C5700F53249 /* main.m in Sources */,
-				FB6E800D21C45C5700F53249 /* BrowseOEISVC.m in Sources */,
-				FB6E800A21C45C5700F53249 /* UICircularProgressView.m in Sources */,
-				FB6E800621C45C5700F53249 /* Sequence.m in Sources */,
-				FB6E800221C45C5700F53249 /* ShowSeqVC.m in Sources */,
-				FB6E800721C45C5700F53249 /* AppDelegate.m in Sources */,
+				FB6E2A7821C5869E0009AE83 /* UICircularProgressView.m in Sources */,
+				FB6E2A7B21C5869E0009AE83 /* BrowseOEISVC.m in Sources */,
+				FB6E2A7F21C5869E0009AE83 /* Sequence.m in Sources */,
+				FB6E2A7A21C5869E0009AE83 /* MenuVC.m in Sources */,
+				FB6E2A7621C5869E0009AE83 /* main.m in Sources */,
+				FB6E2A8321C5869E0009AE83 /* ShowSeqVC.m in Sources */,
+				FB6E2A7921C5869E0009AE83 /* AppDelegate.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
