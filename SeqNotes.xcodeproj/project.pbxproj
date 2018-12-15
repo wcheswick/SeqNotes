@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		FB99420421C58B0B009A30E4 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FB99420221C58B0B009A30E4 /* Main.storyboard */; };
 		FB99420921C58B0C009A30E4 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FB99420721C58B0C009A30E4 /* LaunchScreen.storyboard */; };
 		FB99420C21C58B0C009A30E4 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = FB99420B21C58B0C009A30E4 /* main.m */; };
 		FB99421421C58B74009A30E4 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = FB99421221C58B74009A30E4 /* AppDelegate.m */; };
@@ -24,7 +23,6 @@
 
 /* Begin PBXFileReference section */
 		FB9941F621C58B0B009A30E4 /* SeqNotes.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SeqNotes.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		FB99420321C58B0B009A30E4 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		FB99420821C58B0C009A30E4 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		FB99420A21C58B0C009A30E4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		FB99420B21C58B0C009A30E4 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -95,7 +93,6 @@
 				FB99422021C58B93009A30E4 /* Neil notes */,
 				FB99420721C58B0C009A30E4 /* LaunchScreen.storyboard */,
 				FB99420A21C58B0C009A30E4 /* Info.plist */,
-				FB99420221C58B0B009A30E4 /* Main.storyboard */,
 				FB99421521C58B7B009A30E4 /* Assets.xcassets */,
 				FB99420B21C58B0C009A30E4 /* main.m */,
 			);
@@ -164,7 +161,6 @@
 				FB99422121C58B93009A30E4 /* Music1.txt in Resources */,
 				FB99422321C58B93009A30E4 /* Neil notes in Resources */,
 				FB99421621C58B7B009A30E4 /* Assets.xcassets in Resources */,
-				FB99420421C58B0B009A30E4 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -188,14 +184,6 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXVariantGroup section */
-		FB99420221C58B0B009A30E4 /* Main.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				FB99420321C58B0B009A30E4 /* Base */,
-			);
-			name = Main.storyboard;
-			sourceTree = "<group>";
-		};
 		FB99420721C58B0C009A30E4 /* LaunchScreen.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (
