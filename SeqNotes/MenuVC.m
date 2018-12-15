@@ -11,6 +11,8 @@
 #import "UICircularProgressView.h"
 #import "Defines.h"
 
+// cloned, poot
+
 @interface MenuVC ()
 
 @property (nonatomic, strong)   NSMutableArray *sequences;
