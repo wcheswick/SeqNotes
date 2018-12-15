@@ -23,16 +23,6 @@
 		FB6E2A8321C5869E0009AE83 /* ShowSeqVC.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6E2A7521C5869D0009AE83 /* ShowSeqVC.m */; };
 /* End PBXBuildFile section */
 
-/* Begin PBXContainerItemProxy section */
-		FB6E2A7221C5869D0009AE83 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = FB6E2A6E21C5869D0009AE83 /* SeqNotes.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = FB6E7FD321C45C0F00F53249;
-			remoteInfo = SeqNotes;
-		};
-/* End PBXContainerItemProxy section */
-
 /* Begin PBXFileReference section */
 		FB6E2A5A21C5869D0009AE83 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = ../poot/main.m; sourceTree = "<group>"; };
 		FB6E2A5B21C5869D0009AE83 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = ../poot/Assets.xcassets; sourceTree = "<group>"; };
@@ -54,7 +44,6 @@
 		FB6E2A6B21C5869D0009AE83 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "Default-568h@2x.png"; path = "../poot/Default-568h@2x.png"; sourceTree = "<group>"; };
 		FB6E2A6C21C5869D0009AE83 /* Music1.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = Music1.txt; path = ../poot/Music1.txt; sourceTree = "<group>"; };
 		FB6E2A6D21C5869D0009AE83 /* Neil notes */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "Neil notes"; path = "../poot/Neil notes"; sourceTree = "<group>"; };
-		FB6E2A6E21C5869D0009AE83 /* SeqNotes.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SeqNotes.xcodeproj; path = ../poot/SeqNotes.xcodeproj; sourceTree = "<group>"; };
 		FB6E2A7421C5869D0009AE83 /* ShowSeqVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ShowSeqVC.h; path = ../poot/ShowSeqVC.h; sourceTree = "<group>"; };
 		FB6E2A7521C5869D0009AE83 /* ShowSeqVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ShowSeqVC.m; path = ../poot/ShowSeqVC.m; sourceTree = "<group>"; };
 		FB6E7FD321C45C0F00F53249 /* SeqNotes.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SeqNotes.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -71,40 +60,31 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		FB6E2A6F21C5869D0009AE83 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				FB6E2A7321C5869D0009AE83 /* SeqNotes.app */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
 		FB6E7FCA21C45C0F00F53249 = {
 			isa = PBXGroup;
 			children = (
+				FB6E2A6821C5869D0009AE83 /* Defines.h */,
 				FB6E2A6621C5869D0009AE83 /* AppDelegate.h */,
 				FB6E2A5E21C5869D0009AE83 /* AppDelegate.m */,
-				FB6E2A5B21C5869D0009AE83 /* Assets.xcassets */,
-				FB6E2A6321C5869D0009AE83 /* Base.lproj */,
-				FB6E2A6721C5869D0009AE83 /* BrowseOEISVC.h */,
-				FB6E2A6121C5869D0009AE83 /* BrowseOEISVC.m */,
-				FB6E2A6B21C5869D0009AE83 /* Default-568h@2x.png */,
-				FB6E2A6821C5869D0009AE83 /* Defines.h */,
-				FB6E2A6221C5869D0009AE83 /* Info.plist */,
-				FB6E2A6521C5869D0009AE83 /* LaunchStoryboard.storyboard */,
-				FB6E2A5A21C5869D0009AE83 /* main.m */,
 				FB6E2A6A21C5869D0009AE83 /* MenuVC.h */,
 				FB6E2A6021C5869D0009AE83 /* MenuVC.m */,
-				FB6E2A6C21C5869D0009AE83 /* Music1.txt */,
-				FB6E2A6D21C5869D0009AE83 /* Neil notes */,
-				FB6E2A5F21C5869D0009AE83 /* SeqNotes.entitlements */,
-				FB6E2A6E21C5869D0009AE83 /* SeqNotes.xcodeproj */,
-				FB6E2A6421C5869D0009AE83 /* Sequence.h */,
-				FB6E2A6921C5869D0009AE83 /* Sequence.m */,
 				FB6E2A7421C5869D0009AE83 /* ShowSeqVC.h */,
 				FB6E2A7521C5869D0009AE83 /* ShowSeqVC.m */,
+				FB6E2A6721C5869D0009AE83 /* BrowseOEISVC.h */,
+				FB6E2A6121C5869D0009AE83 /* BrowseOEISVC.m */,
+				FB6E2A6421C5869D0009AE83 /* Sequence.h */,
+				FB6E2A6921C5869D0009AE83 /* Sequence.m */,
 				FB6E2A5C21C5869D0009AE83 /* UICircularProgressView.h */,
 				FB6E2A5D21C5869D0009AE83 /* UICircularProgressView.m */,
+				FB6E2A6C21C5869D0009AE83 /* Music1.txt */,
+				FB6E2A5A21C5869D0009AE83 /* main.m */,
+				FB6E2A6B21C5869D0009AE83 /* Default-568h@2x.png */,
+				FB6E2A6221C5869D0009AE83 /* Info.plist */,
+				FB6E2A6521C5869D0009AE83 /* LaunchStoryboard.storyboard */,
+				FB6E2A5B21C5869D0009AE83 /* Assets.xcassets */,
+				FB6E2A5F21C5869D0009AE83 /* SeqNotes.entitlements */,
+				FB6E2A6D21C5869D0009AE83 /* Neil notes */,
+				FB6E2A6321C5869D0009AE83 /* Base.lproj */,
 				FB6E7FD421C45C0F00F53249 /* Products */,
 				FB6E801221C4656000F53249 /* Frameworks */,
 			);
@@ -178,28 +158,12 @@
 			mainGroup = FB6E7FCA21C45C0F00F53249;
 			productRefGroup = FB6E7FD421C45C0F00F53249 /* Products */;
 			projectDirPath = "";
-			projectReferences = (
-				{
-					ProductGroup = FB6E2A6F21C5869D0009AE83 /* Products */;
-					ProjectRef = FB6E2A6E21C5869D0009AE83 /* SeqNotes.xcodeproj */;
-				},
-			);
 			projectRoot = "";
 			targets = (
 				FB6E7FD221C45C0F00F53249 /* SeqNotes */,
 			);
 		};
 /* End PBXProject section */
-
-/* Begin PBXReferenceProxy section */
-		FB6E2A7321C5869D0009AE83 /* SeqNotes.app */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.application;
-			path = SeqNotes.app;
-			remoteRef = FB6E2A7221C5869D0009AE83 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		FB6E7FD121C45C0F00F53249 /* Resources */ = {
