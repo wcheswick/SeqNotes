@@ -1,0 +1,106 @@
+December 11 2018
+Some sequences that sound pretty good, for the Music and Math exhibit in Heidelberg.
+Listed by A-number
+I've given a Title and a Comment for each one, to save you the trouble of finding short titles and comments. Let me know if you need even shorter titles or comments.
+Music: the standard midi file (the default), unless suggested otherwise
+
+
+A000010
+Title: Euler totient function
+Terms; 1, 1, 2, 2, 4, 2, 6, 4, 6, 4, 10, 4, 12, 6, 8, 8, 16, 6, 18, 8, 12, 10, 22, 8, ...
+Comment: Number of numbers <= n and relatively prime to n.
+Music: Two midi files, the standard one, and one using Rate=40, Release Velocity=20, Duration offset=1, Instrument = 103 (FX7)
+
+A000120
+Title: Write n in base 2, count 1's.
+Terms; 0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4, 1, 2, 2, 3, 2, 3, 3, 4, 2, 3, ...
+Comment: Fractal. Basic sequence in communication and computers.
+Music: Two midi files, the standard one, and one using Rate=150.
+
+A001223
+Title: Differences between primes
+Terms; 1, 2, 2, 4, 2, 4, 2, 4, 6, 2, 6, 4, 2, 4, 6, 6, 2, 6, 4, 2, 6, 4, 6, 8, 4, 2, ...
+Comment: The primes themselvers grow too rapidly, but their difference sound great2
+
+A003602
+Title: Kimberling's paraphrases
+Terms; 1, 1, 2, 1, 3, 2, 4, 1, 5, 3, 6, 2, 7, 4, 8, 1, 9, 5, 10, 3, 11, 6, 12, 2, 13, ...
+Comment: If n = (2k-1)*2^m then a(n) = k. 
+
+A004718
+Title: The Danish composer Per Nørgård's "infinity sequence"
+Terms; 0, 1, -1, 2, 1, 0, -2, 3, -1, 2, 0, 1, 2, -1, -3, 4, 1, 0, -2, 3, 0, 1, -1, 2, ...
+Comment: a(2n) = -a(n), a(2n+1) = a(n) + 1 starting with a(0)=0. I have 3 links to his music, but they are all broken. Will try to fix.
+
+A005132
+Title; Recamán's sequence
+Terms: 0, 1, 3, 6, 2, 7, 13, 20, 12, 21, 11, 22, 10, 23, 9, 24, 8, 25, 43, 62, 42, 63, ...
+Comment: Start with 0, then subtract or add 1, 2, 3, .... You first try to subtract, but you can only do that if it gives a positive number that is not already in the sequence, otherwise you must add.
+Music: Two midi files, the standard one, and one using Instrument 103 (FX 7)
+
+A005185
+Title: Hofstadter's Q-sequence
+Terms; 1, 1, 2, 3, 3, 4, 5, 5, 6, 6, 6, 8, 8, 8, 10, 9, 10, 11, 11, 12, 12, 12, 12, ...
+Comment:  a(n) = a(n-a(n-1)) + a(n-a(n-2)) starting with 1, 1.  One of the great mysteries..
+
+A006577
+Title: Steps to reach 1 in 3x+1 problem
+Terms; 0, 1, 7, 2, 5, 8, 16, 3, 19, 6, 14, 9, 9, 17, 17, 4, 12, 20, 20, 7, 7, 15, 15, ...
+Comment: If even, divide by 2; if odd, multiply by 3 and add 1. Does it always reach 1? No one knows!
+
+A007318
+Title: Pascal's triangle
+Terms; 1, 1, 1, 1, 2, 1, 1, 3, 3, 1, 1, 4, 6, 4, 1, 1, 5, 10, 10, 5, 1, 1, 6, 15, 20, ...
+Comment: Make a triangle, rows have 1 at each end, other entries are sum of 2 terms about it
+
+A025480
+Title: A simple fractal
+Terms; 0, 0, 1, 0, 2, 1, 3, 0, 4, 2, 5, 1, 6, 3, 7, 0, 8, 4, 9, 2, 10, 5, 11, 1, 12, ...
+Comment: a(2n) = n, a(2n+1) = a(n).
+
+A056239
+Title: Used by Danish composer Aage Rasmussen.
+Terms; 0, 1, 2, 2, 3, 3, 4, 3, 4, 4, 5, 4, 6, 5, 5, 4, 7, 5, 8, 5, 6, 6, 9, 5, 6, 7, ...
+Comment: If n = Product_{k >= 1} (p_k)^(c_k) where p_k is k-th prime then a(n) = Sum_{k >= 1} k*c_k. I will try to find out where Rasmussen used it.
+
+A123456
+Title: Ludwig van Beethoven, Bagatelle No. 25, "Für Elise".
+Terms; -20, 56, 55, 56, 55, 56, 51, 54, 52, 49, 32, 37, 40, 44, 49, 51, 32, 36, 44, ...
+Comment: A transcription to demonstrate the OEIS "listen" button.
+
+A220952
+Title: Donald Knuth's twisted enumeration of the natural numbers.
+Terms; 0, 1, 2, 3, 4, 9, 14, 19, 18, 17, 16, 11, 12, 13, 8, 7, 6, 5, 10, 15, 20, 21, ...
+Comment: The definition is too complicated to give here. But the graph is the most amazing of all 300000 sequences in the OEIS. It also sounds great. 
+
+A258200
+Title: Related to what happens when you repeatedly take the tangent and round down to an integer.
+Terms: 3, 19, 3, 19, 3, 19, 3, 19, 3, 13, 6, 3, 7, 6, 6, 3, 7, 6, 6, 3, 13, 6, 3, 3, ...
+Comment: If you start with n, and repeatedly take floor(tangent(x)), then it is cojectured that you always reach either 0 or 1. This is the differences between the numbers that reach 1.
+Music: Two midi files, the standard one, and one using a somewhat slower tempo, 60 for example and somewhat higher pitch offset.
+
+A276204
+Title: Avoids certain arithmetic progressions
+Terms; 0, 0, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 0, 0, 1, 2, 2, 1, 4, 4, 1, 4, 4, 1, 2, 2, ...
+Comment: If j-i=k-j, you can't have a(i)+a(j)=a(k). Always choose the smallest permitted value.
+
+A276207
+Title: Avoids all arithmetic progressions
+Terms; 0, 0, 1, 0, 0, 2, 4, 1, 1, 0, 0, 5, 0, 0, 3, 7, 2, 3, 2, 4, 1, 1, 12, 1, 5, 1, ...
+Comment: Like the previous sequence, but must avoid more things. Can you hear how much wilder this one is?
+
+A279125
+Title: You can have a repeated term, a(i)=a(j), but only if i AND j is zero. 
+Terms: 0, 0, 1, 0, 2, 3, 4, 0, 3, 2, 5, 1, 6, 7, 8, 0, 7, 6, 9, 5, 10, 11, 12, 4, 13, ...
+Comment: Always choose the smallest permitted value.
+
+A281288
+Title: Sum a(d) for d dividing n-2, negate the sum.
+Terms; 1, -1, -1, 0, 0, 0, -1, 1, 0, -1, 0, 1, -1, 0, 0, 1, 0, -2, -1, 3, 0, -2, 1, 2, ...
+Comment: The graph is equally strange.
+
+A318921
+Title: Dirge for Claude L.
+Terms: 0, 0, 0, 1, 0, 0, 1, 3, 0, 0, 0, 1, 2, 1, 3, 7, 0, 0, 0, 1, 0, 0, 1, 3, 4, 2, 
+Comment: In binary expansion of n, delete one symbol from each run. 
+
