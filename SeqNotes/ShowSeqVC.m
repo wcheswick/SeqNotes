@@ -80,6 +80,7 @@
     f.size.width = f.size.height*1.4;
     play.frame = f;
     [play setTitle:@"▶️" forState:UIControlStateNormal];
+    [play setTitle:@"॥" forState:UIControlStateSelected];
     play.titleLabel.font = [UIFont boldSystemFontOfSize:soundControlView.frame.size.height - 8];
     [play addTarget:self
              action:@selector(doPlay:)
@@ -132,13 +133,14 @@
 
 
 - (IBAction)doPlay:(UIView *)sender {
-    NSLog(@"Play");
+    OSStatus rc;
     
     // Create a new music sequence
     MusicSequence s;
     // Initialise the music sequence
     NewMusicSequence(&s);
-    
+
+#ifdef NOTDEF
     // Get a string to the path of the MIDI file which
     // should be located in the Resources folder
     // I'm using a simple test midi file which is included in the download bundle at the end of this document
@@ -154,6 +156,9 @@
         NSLog(@"MusicSequenceFileLoad failed: %d", (int)rc);
         return;
     }
+#endif
+    
+    rc = MusicSequenceFileLoadData (s, (__bridge CFDataRef _Nonnull)(sequence.midiData), 0, 0);
     // Create a new music player
     MusicPlayer  p;
     // Initialise the music player
