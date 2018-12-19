@@ -15,6 +15,7 @@
 		FB36C5D121C6F14D004E7EFE /* web.midi in Resources */ = {isa = PBXBuildFile; fileRef = FB36C5D021C6F14D004E7EFE /* web.midi */; };
 		FB36C5D721CAE5F5004E7EFE /* GeneralUser GS MuseScore v1.442.sf2 in Resources */ = {isa = PBXBuildFile; fileRef = FB36C5D621CAE5F5004E7EFE /* GeneralUser GS MuseScore v1.442.sf2 */; };
 		FB36C5D921CAF4D9004E7EFE /* Acoustic Guitars JNv2.4.sf2 in Resources */ = {isa = PBXBuildFile; fileRef = FB36C5D821CAF4D9004E7EFE /* Acoustic Guitars JNv2.4.sf2 */; };
+		FB36C5DB21CAFB33004E7EFE /* InstrumentList in Resources */ = {isa = PBXBuildFile; fileRef = FB36C5DA21CAFB33004E7EFE /* InstrumentList */; };
 		FB99420921C58B0C009A30E4 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FB99420721C58B0C009A30E4 /* LaunchScreen.storyboard */; };
 		FB99420C21C58B0C009A30E4 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = FB99420B21C58B0C009A30E4 /* main.m */; };
 		FB99421421C58B74009A30E4 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = FB99421221C58B74009A30E4 /* AppDelegate.m */; };
@@ -38,6 +39,7 @@
 		FB36C5D021C6F14D004E7EFE /* web.midi */ = {isa = PBXFileReference; lastKnownFileType = audio.midi; path = web.midi; sourceTree = "<group>"; };
 		FB36C5D621CAE5F5004E7EFE /* GeneralUser GS MuseScore v1.442.sf2 */ = {isa = PBXFileReference; lastKnownFileType = file; path = "GeneralUser GS MuseScore v1.442.sf2"; sourceTree = "<group>"; };
 		FB36C5D821CAF4D9004E7EFE /* Acoustic Guitars JNv2.4.sf2 */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Acoustic Guitars JNv2.4.sf2"; sourceTree = "<group>"; };
+		FB36C5DA21CAFB33004E7EFE /* InstrumentList */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = InstrumentList; sourceTree = "<group>"; };
 		FB9941F621C58B0B009A30E4 /* SeqNotes.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SeqNotes.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FB99420821C58B0C009A30E4 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		FB99420A21C58B0C009A30E4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -125,6 +127,7 @@
 				FB99420A21C58B0C009A30E4 /* Info.plist */,
 				FB99421521C58B7B009A30E4 /* Assets.xcassets */,
 				FB36C5D621CAE5F5004E7EFE /* GeneralUser GS MuseScore v1.442.sf2 */,
+				FB36C5DA21CAFB33004E7EFE /* InstrumentList */,
 				FB36C5D821CAF4D9004E7EFE /* Acoustic Guitars JNv2.4.sf2 */,
 				FB36C5CC21C6D661004E7EFE /* play.midi */,
 				FB36C5D021C6F14D004E7EFE /* web.midi */,
@@ -196,6 +199,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FB36C5DB21CAFB33004E7EFE /* InstrumentList in Resources */,
 				FB99420921C58B0C009A30E4 /* LaunchScreen.storyboard in Resources */,
 				FB36C5D721CAE5F5004E7EFE /* GeneralUser GS MuseScore v1.442.sf2 in Resources */,
 				FB36C5D921CAF4D9004E7EFE /* Acoustic Guitars JNv2.4.sf2 in Resources */,
