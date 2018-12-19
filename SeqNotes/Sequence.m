@@ -44,6 +44,7 @@
 #define kShortComment   @"ShortComment"
 #define kValues         @"Values"
 #define kPlotData       @"PlotData"
+#define kMidiData       @"MidiData"
 
 - (id) initWithCoder: (NSCoder *)coder {
     self = [super init];
@@ -55,7 +56,8 @@
         shortComment = [coder decodeObjectForKey: kShortComment];
         values = [coder decodeObjectForKey:kValues];
         plotData = [coder decodeObjectForKey:kPlotData];
-    }
+        midiData = [coder decodeObjectForKey:kMidiData];
+   }
     return self;
 }
 
@@ -67,6 +69,7 @@
     [coder encodeObject:shortComment forKey:kShortComment];
     [coder encodeObject:values forKey:kValues];
     [coder encodeObject:plotData forKey:kPlotData];
+    [coder encodeObject:midiData forKey:kMidiData];
 }
 
 - (void) loadDataFromOEIS:(id<sequenceProtocol>)caller {
@@ -187,9 +190,12 @@
     }
 }
 
+#define PIANO   1   // piano
+#define MARIMBA   13
+
 - (void) fetchMIDI {
     NSMutableData *body = [NSMutableData data];
-    [body appendData:[[NSString stringWithFormat:@"midi=1&SAVE=SAVE&seq=%@&bpm=100&vol=100&voice=1&velon=80&veloff=80&pmod=88&poff=20&dmod=1&doff=0&cutoff=4096\n", seq]
+    [body appendData:[[NSString stringWithFormat:@"midi=1&SAVE=SAVE&seq=%@&bpm=100&vol=100&voice=%d&velon=80&veloff=80&pmod=88&poff=20&dmod=1&doff=0&cutoff=4096\n", seq, MARIMBA]
                       dataUsingEncoding:NSUTF8StringEncoding]];
     
     midiData = [[NSMutableData alloc] init];
@@ -199,7 +205,6 @@
     config.HTTPCookieAcceptPolicy = NO;
 //    config.URLCache = NSURLRequestUseProtocolCachePolicy;
     NSURLSession *session = [NSURLSession sessionWithConfiguration:config];
-    
     NSString *midiUrl = [NSString stringWithFormat:@"https://oeis.org/play?seq=%@", seq];
     
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:midiUrl]];

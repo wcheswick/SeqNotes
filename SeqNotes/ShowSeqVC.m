@@ -17,6 +17,7 @@
 
 @property (nonatomic, strong)   UIView *containerView;
 @property (nonatomic, strong)   UIScrollView *scrollView;
+@property (nonatomic, strong)   UISlider *musicSlider;
 @property (nonatomic, strong)   UIProgressView *progressView;
 
 @end
@@ -26,6 +27,7 @@
 @synthesize sequence;
 @synthesize containerView, scrollView;
 @synthesize progressView;
+@synthesize musicSlider;
 
 - (id)initWithSequence: (Sequence *)s {
     self = [super init];
@@ -86,7 +88,8 @@
              action:@selector(doPlay:)
    forControlEvents:UIControlEventTouchUpInside];
     [soundControlView addSubview:play];
-    
+
+#ifdef notdef
     progressView = [[UIProgressView alloc] initWithProgressViewStyle:UIProgressViewStyleDefault];
     f.origin.x = RIGHT(f) + 20;
     f.origin.y = f.size.height/2.0;
@@ -95,6 +98,19 @@
     progressView.hidden = NO;
     progressView.backgroundColor = [UIColor greenColor];
     [soundControlView addSubview:progressView];
+#endif
+    
+    musicSlider = [[UISlider alloc] init];
+    f.origin.x = RIGHT(f) + 20;
+    f.origin.y = f.size.height/2.0;
+    f.size.width = 200;
+    musicSlider.frame = f;
+    musicSlider.hidden = NO;
+    musicSlider.minimumValue = 0.0;
+    musicSlider.maximumValue = 1.0;
+    musicSlider.backgroundColor = [UIColor greenColor];
+    [musicSlider addTarget:self action:@selector(doSlider:) forControlEvents:UIControlEventValueChanged];
+    [soundControlView addSubview:musicSlider];
 
     [containerView addSubview:soundControlView];
     
@@ -164,37 +180,41 @@
     // Initialise the music player
     rc = NewMusicPlayer(&p);
     if (rc) {
-        NSLog(@"NewMusicPlayer failed: %d", (int)rc);
+        [self musicError:@"NewMusicPlayer" err:rc];
         return;
     }
 
     // Load the sequence into the music player
     rc = MusicPlayerSetSequence(p, s);
     if (rc) {
-        NSLog(@"MusicPlayerSetSequence failed: %d", (int)rc);
+        [self musicError:@"MusicPlayerSetSequence" err:rc];
         return;
     }
     
     UInt32 trackCount;
     rc = MusicSequenceGetTrackCount(s, &trackCount);
     if (rc) {
-        NSLog(@"MusicPlayerSetSequence failed: %d", (int)rc);
+        [self musicError:@"MusicSequenceGetTrackCount" err:rc];
         return;
     } else
         NSLog(@"  track count: %u", (unsigned int)trackCount);
+    if (trackCount == 0) {  //midi tracks missing
+        NSLog(@"%@: Midi tracks missing: %lu", sequence.seq, sequence.midiData.length);
+        return;
+    }
     
     MusicTrack track;
     for (int i=0; i<trackCount; i++) {
         rc = MusicSequenceGetIndTrack(s, i, &track);
         if (rc) {
-            NSLog(@"MusicSequenceGetIndTrack %d failed: %d", i, (int)rc);
+            [self musicError:@"MusicSequenceGetIndTrack" err:rc];
             return;
         } else {
             MusicTimeStamp len;
             UInt32 sz = sizeof(MusicTimeStamp);
             rc = MusicTrackGetProperty(track, kSequenceTrackProperty_TrackLength, &len, &sz);
             if (rc) {
-                NSLog(@"MusicTrackGetProperty failed: %d", (int)rc);
+                [self musicError:@"MusicTrackGetProperty" err:rc];
                 return;
             }
             NSLog(@"  track %d is %.3f", i, len);
@@ -205,13 +225,13 @@
     // reduces latency when MusicPlayerStart is called
     rc = MusicPlayerPreroll(p);
     if (rc) {
-        NSLog(@"MusicPlayerPreroll failed: %d", (int)rc);
+        [self musicError:@"MusicPlayerPreroll" err:rc];
         return;
     }
     // Starts the music playing
     rc = MusicPlayerStart(p);
     if (rc) {
-        NSLog(@"MusicPlayerStart failed: %d", (int)rc);
+        [self musicError:@"MusicPlayerStart" err:rc];
         return;
     }
 
@@ -221,19 +241,24 @@
     UInt32 sz = sizeof(MusicTimeStamp);
     rc = MusicSequenceGetIndTrack(s, 1, &t);
     if (rc) {
-        NSLog(@"MusicSequenceGetIndTrack failed: %d", (int)rc);
+        [self musicError:@"MusicSequenceGetIndTrack" err:rc];
         return;
     }
     rc = MusicTrackGetProperty(t, kSequenceTrackProperty_TrackLength, &len, &sz);
     if (rc) {
-        NSLog(@"MusicTrackGetProperty failed: %d", (int)rc);
+        [self musicError:@"MusicTrackGetProperty" err:rc];
         return;
     }
     NSLog(@"  len: %.3f, size:%u", len, (unsigned int)sz);
+#ifdef notdef
     progressView.hidden = NO;
     progressView.progress = 0.0;
     [progressView setNeedsDisplay];
-
+#endif
+    musicSlider.value = 0.0;
+    musicSlider.hidden = NO;
+    [musicSlider setNeedsDisplay];
+    
     NSLog(@"Music has started...");
     while (1) { // kill time until the music is over
         [[NSRunLoop currentRunLoop] runMode: NSDefaultRunLoopMode beforeDate: [NSDate distantPast]];
@@ -241,12 +266,11 @@
         MusicTimeStamp now = 0;
         rc = MusicPlayerGetTime (p, &now);
         if (rc) {
-            NSLog(@"MusicPlayerGetTime failed: %d", (int)rc);
+            [self musicError:@"MusicPlayerGetTime" err:rc];
             return;
         }
-        [progressView setProgress:now / len animated:YES];
-        progressView.progress = now / len;
-        [progressView setNeedsDisplay];
+        [musicSlider setValue:now / len animated:YES];
+        [musicSlider setNeedsDisplay];
         if (now >= len)
             break;
     }
@@ -255,13 +279,28 @@
     // Stop the player and dispose of the objects
     rc = MusicPlayerStop(p);
     if (rc) {
-        NSLog(@"MusicPlayerStop failed: %d", (int)rc);
+        [self musicError:@"MusicPlayerStop" err:rc];
         return;
     }
     progressView.hidden = YES;
     [progressView setNeedsDisplay];
     DisposeMusicSequence(s);
     DisposeMusicPlayer(p);
+}
+
+- (IBAction)doSlider:(UIView *)sender {
+    UISlider *view = (UISlider *)sender;
+    NSLog(@"music slider changed to %.3f", view.value);
+}
+
+- (void) musicError:(NSString *) mesg err:(OSStatus) rc {
+    switch (rc) {
+        case kAudioToolboxErr_InvalidPlayerState:
+            NSLog(@"%@ failed: bad player state", mesg);
+            break;
+        default:
+            NSLog(@"%@ failed: %d", mesg, (int)rc);
+    }
 }
 
 - (IBAction)doDone:(UISwipeGestureRecognizer *)sender {

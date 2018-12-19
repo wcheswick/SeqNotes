@@ -57,8 +57,14 @@
     [super viewDidAppear:animated];
     
     sequences = [NSKeyedUnarchiver unarchiveObjectWithFile:SEQUENCES_ARCHIVE];
+    if (sequences) {    // do we have mididata?  old bug, needs reloading if no
+        Sequence *one = [sequences objectAtIndex:0];
+        if (!one.midiData || one.midiData.length == 0) {
+            NSLog(@"midi data missing, reload everything");
+            sequences = nil;
+        }
+    }
     if (DEBUG_SEQ_INIT || !sequences) {
-
         sequences = [[NSMutableArray alloc] init];
         incomingSequences = [self initializeSequences];
         NSLog(@"loading %lu new sequences", (unsigned long)incomingSequences.count);
@@ -155,6 +161,8 @@
         cell.textLabel.text = [NSString stringWithFormat:@"%@:  %@", seq.seq,
                                [seq titleToUse]];
         cell.detailTextLabel.text = [seq subtitleToUse];
+        cell.backgroundColor = (seq && seq.midiData.length > 0) ?
+            [UIColor whiteColor] : [UIColor redColor];
     }
     return cell;
 }

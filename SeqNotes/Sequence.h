@@ -17,7 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface Sequence : NSObject  {
+@interface Sequence : NSObject {
     NSString *seq, *name, *description;
     NSString *shortTitle, *shortComment;    // manual, from startup file
     NSMutableArray *values;
