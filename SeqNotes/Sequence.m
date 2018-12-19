@@ -192,10 +192,12 @@
 
 #define PIANO   1   // piano
 #define MARIMBA   13
+#define ALTOSAX     65
 
 - (void) fetchMIDI {
     NSMutableData *body = [NSMutableData data];
-    [body appendData:[[NSString stringWithFormat:@"midi=1&SAVE=SAVE&seq=%@&bpm=100&vol=100&voice=%d&velon=80&veloff=80&pmod=88&poff=20&dmod=1&doff=0&cutoff=4096\n", seq, MARIMBA]
+    [body appendData:[[NSString stringWithFormat:@"midi=1&SAVE=SAVE&seq=%@&bpm=100&vol=100&voice=%d&velon=80&veloff=80&pmod=88&poff=20&dmod=1&doff=0&cutoff=4096\n",
+                       seq, ALTOSAX]
                       dataUsingEncoding:NSUTF8StringEncoding]];
     
     midiData = [[NSMutableData alloc] init];

@@ -6,6 +6,8 @@
 //  Copyright © 2018 Cheswick.com. All rights reserved.
 //
 
+#import <Foundation/Foundation.h>
+#import <AVFoundation/AVFoundation.h>
 #import <AudioToolbox/MusicPlayer.h>
 
 #import "ShowSeqVC.h"
@@ -19,6 +21,9 @@
 @property (nonatomic, strong)   UIScrollView *scrollView;
 @property (nonatomic, strong)   UISlider *musicSlider;
 @property (nonatomic, strong)   UIProgressView *progressView;
+@property (nonatomic, strong)   AVMIDIPlayer *player;
+@property (nonatomic, strong)   UIButton *play;
+@property (nonatomic, strong)   NSTimer *checkProgressTimer;
 
 @end
 
@@ -27,7 +32,9 @@
 @synthesize sequence;
 @synthesize containerView, scrollView;
 @synthesize progressView;
+@synthesize checkProgressTimer;
 @synthesize musicSlider;
+@synthesize player, play;
 
 - (id)initWithSequence: (Sequence *)s {
     self = [super init];
@@ -43,6 +50,8 @@
     self.navigationController.navigationBar.hidden = NO;
     self.navigationController.navigationBar.opaque = YES;
     self.title = sequence.seq;
+    player = nil;
+    checkProgressTimer = nil;
     
     UIBarButtonItem *leftBarButton = [[UIBarButtonItem alloc]
                                       initWithBarButtonSystemItem:UIBarButtonSystemItemDone
@@ -74,7 +83,7 @@
     soundControlView.frame = CGRectMake(0, BELOW(descriptionView.frame) + SEP,
                                         self.view.frame.size.width, 2*LARGE_H);
     
-    UIButton *play = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+    play = [UIButton buttonWithType:UIButtonTypeRoundedRect];
     CGRect f;
     f.origin.x = 0;
     f.size.height = soundControlView.frame.size.height - 2;
@@ -86,7 +95,7 @@
     play.titleLabel.font = [UIFont boldSystemFontOfSize:soundControlView.frame.size.height - 8];
     [play addTarget:self
              action:@selector(doPlay:)
-   forControlEvents:UIControlEventTouchUpInside];
+    forControlEvents:UIControlEventTouchUpInside];
     [soundControlView addSubview:play];
 
 #ifdef notdef
@@ -102,13 +111,13 @@
     
     musicSlider = [[UISlider alloc] init];
     f.origin.x = RIGHT(f) + 20;
-    f.origin.y = f.size.height/2.0;
+    f.origin.y = 0;
     f.size.width = 200;
+    f.size.height = play.frame.size.height;
     musicSlider.frame = f;
     musicSlider.hidden = NO;
     musicSlider.minimumValue = 0.0;
     musicSlider.maximumValue = 1.0;
-    musicSlider.backgroundColor = [UIColor greenColor];
     [musicSlider addTarget:self action:@selector(doSlider:) forControlEvents:UIControlEventValueChanged];
     [soundControlView addSubview:musicSlider];
 
@@ -149,148 +158,94 @@
 
 
 - (IBAction)doPlay:(UIView *)sender {
+    if (!play.selected)
+        [self doPlayer];
+    else {
+        [self stopPlayer];
+    }
+}
+
+- (void) stopPlayer {
+    if (player) {
+        [player stop];
+    }
+    play.selected = NO;
+    [play setNeedsDisplay];
+    [checkProgressTimer invalidate];
+    checkProgressTimer = nil;
+}
+
+- (void) doPlayer {
     OSStatus rc;
-    
-    // Create a new music sequence
-    MusicSequence s;
-    // Initialise the music sequence
-    NewMusicSequence(&s);
+    NSError *error;
 
-#ifdef NOTDEF
-    // Get a string to the path of the MIDI file which
-    // should be located in the Resources folder
-    // I'm using a simple test midi file which is included in the download bundle at the end of this document
-    NSString *midiFilePath = [[NSBundle mainBundle]
-                              pathForResource:@"web"
-                              ofType:@"midi"];
-    
-    // Create a new URL which points to the MIDI file
-    NSURL * midiFileURL = [NSURL fileURLWithPath:midiFilePath];
-    
-    OSStatus rc = MusicSequenceFileLoad(s, (__bridge CFURLRef)midiFileURL, 0, 0);
-    if (rc) {
-        NSLog(@"MusicSequenceFileLoad failed: %d", (int)rc);
-        return;
-    }
-#endif
-    
-    rc = MusicSequenceFileLoadData (s, (__bridge CFDataRef _Nonnull)(sequence.midiData), 0, 0);
-    // Create a new music player
-    MusicPlayer  p;
-    // Initialise the music player
-    rc = NewMusicPlayer(&p);
-    if (rc) {
-        [self musicError:@"NewMusicPlayer" err:rc];
-        return;
-    }
-
-    // Load the sequence into the music player
-    rc = MusicPlayerSetSequence(p, s);
-    if (rc) {
-        [self musicError:@"MusicPlayerSetSequence" err:rc];
-        return;
-    }
-    
-    UInt32 trackCount;
-    rc = MusicSequenceGetTrackCount(s, &trackCount);
-    if (rc) {
-        [self musicError:@"MusicSequenceGetTrackCount" err:rc];
-        return;
-    } else
-        NSLog(@"  track count: %u", (unsigned int)trackCount);
-    if (trackCount == 0) {  //midi tracks missing
-        NSLog(@"%@: Midi tracks missing: %lu", sequence.seq, sequence.midiData.length);
-        return;
-    }
-    
-    MusicTrack track;
-    for (int i=0; i<trackCount; i++) {
-        rc = MusicSequenceGetIndTrack(s, i, &track);
-        if (rc) {
-            [self musicError:@"MusicSequenceGetIndTrack" err:rc];
-            return;
-        } else {
-            MusicTimeStamp len;
-            UInt32 sz = sizeof(MusicTimeStamp);
-            rc = MusicTrackGetProperty(track, kSequenceTrackProperty_TrackLength, &len, &sz);
-            if (rc) {
-                [self musicError:@"MusicTrackGetProperty" err:rc];
-                return;
-            }
-            NSLog(@"  track %d is %.3f", i, len);
-        }
-    }
-
-    // Called to do some MusicPlayer setup. This just
-    // reduces latency when MusicPlayerStart is called
-    rc = MusicPlayerPreroll(p);
-    if (rc) {
-        [self musicError:@"MusicPlayerPreroll" err:rc];
-        return;
-    }
-    // Starts the music playing
-    rc = MusicPlayerStart(p);
-    if (rc) {
-        [self musicError:@"MusicPlayerStart" err:rc];
-        return;
-    }
-
-    // Get length of track so that we know how long to kill time for
-    MusicTrack t;
-    MusicTimeStamp len;
-    UInt32 sz = sizeof(MusicTimeStamp);
-    rc = MusicSequenceGetIndTrack(s, 1, &t);
-    if (rc) {
-        [self musicError:@"MusicSequenceGetIndTrack" err:rc];
-        return;
-    }
-    rc = MusicTrackGetProperty(t, kSequenceTrackProperty_TrackLength, &len, &sz);
-    if (rc) {
-        [self musicError:@"MusicTrackGetProperty" err:rc];
-        return;
-    }
-    NSLog(@"  len: %.3f, size:%u", len, (unsigned int)sz);
+    if (!player) {  // initialize
+        
+        NSString *bankPath = [[NSBundle mainBundle]
+                              pathForResource:@"GeneralUser GS MuseScore v1.442"
+                              ofType:@"sf2"];
 #ifdef notdef
-    progressView.hidden = NO;
-    progressView.progress = 0.0;
-    [progressView setNeedsDisplay];
+        NSString *bankPath = [[NSBundle mainBundle]
+                              pathForResource:@"Acoustic Guitars JNv2.4"
+                              ofType:@"sf2"];
 #endif
+        if (!bankPath) {
+            NSLog(@"inconceivable, soundsfont file is missing");
+            return;
+        }
+        NSURL *bankURL = [NSURL fileURLWithPath:bankPath];
+        
+        MusicSequence s;
+        // Initialise the music sequence
+        NewMusicSequence(&s);
+        rc = MusicSequenceFileLoadData (s, (__bridge CFDataRef _Nonnull)(sequence.midiData), 0, 0);
+        if (rc) {
+            [self musicError:@"MusicSequenceFileLoadData" err:rc];
+            return;
+        }
+        player = [[AVMIDIPlayer alloc] initWithData:sequence.midiData soundBankURL:bankURL error:&error];
+        if (error) {
+            NSLog(@"player initialization error: %@", [error localizedDescription]);
+            return;
+        }
+        
+        NSLog(@"preparing %@, data length: %lu duration %.1fs",
+              sequence.seq, (unsigned long)sequence.midiData.length, player.duration);
+        
+        [player prepareToPlay];
+        NSLog(@"start playing");
+    } else {
+        NSLog(@"resume playing");
+    }
+    
+    [player play:^(void) {
+        NSLog(@"playing complete");
+        dispatch_async(dispatch_get_main_queue(), ^(void) {
+            [self stopPlayer];
+        });
+    }];
+    
+    play.selected = YES;
+    [play setNeedsDisplay];
+    
     musicSlider.value = 0.0;
     musicSlider.hidden = NO;
     [musicSlider setNeedsDisplay];
-    
-    NSLog(@"Music has started...");
-    while (1) { // kill time until the music is over
-        [[NSRunLoop currentRunLoop] runMode: NSDefaultRunLoopMode beforeDate: [NSDate distantPast]];
-        usleep (3 * 1000 * 1000);
-        MusicTimeStamp now = 0;
-        rc = MusicPlayerGetTime (p, &now);
-        if (rc) {
-            [self musicError:@"MusicPlayerGetTime" err:rc];
-            return;
-        }
-        [musicSlider setValue:now / len animated:YES];
-        [musicSlider setNeedsDisplay];
-        if (now >= len)
-            break;
-    }
-    NSLog(@"... finished");
 
-    // Stop the player and dispose of the objects
-    rc = MusicPlayerStop(p);
-    if (rc) {
-        [self musicError:@"MusicPlayerStop" err:rc];
-        return;
-    }
-    progressView.hidden = YES;
-    [progressView setNeedsDisplay];
-    DisposeMusicSequence(s);
-    DisposeMusicPlayer(p);
+    checkProgressTimer = [NSTimer timerWithTimeInterval:1 repeats:YES block:^(NSTimer *timer) {
+        dispatch_async(dispatch_get_main_queue(), ^(void) {
+            float fracDone = self.player.currentPosition/self.player.duration;
+            NSLog(@"tick %.2f", fracDone);
+            [self.musicSlider setValue:fracDone animated:YES];
+            [self.musicSlider setNeedsDisplay];
+        });
+    }];
 }
 
 - (IBAction)doSlider:(UIView *)sender {
     UISlider *view = (UISlider *)sender;
-    NSLog(@"music slider changed to %.3f", view.value);
+    player.currentPosition = view.value * player.duration;
+    
 }
 
 - (void) musicError:(NSString *) mesg err:(OSStatus) rc {
@@ -304,6 +259,7 @@
 }
 
 - (IBAction)doDone:(UISwipeGestureRecognizer *)sender {
+    [self stopPlayer];
     [self.navigationController popViewControllerAnimated:YES];
 }
 
