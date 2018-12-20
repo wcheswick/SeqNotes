@@ -2,6 +2,9 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "self:SeqNotes.xcodeproj">
+      location = "group:Music1.txt">
+   </FileRef>
+   <FileRef
+      location = "self:">
    </FileRef>
 </Workspace>

@@ -31,6 +31,8 @@
 		FB340FBB21CC266100126A3C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		FB340FBC21CC266500126A3C /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 		FB340FBD21CC2A6300126A3C /* smallnote.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = smallnote.png; sourceTree = "<group>"; };
+		FB340FC421CC3BC800126A3C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
+		FB340FC521CC3BDD00126A3C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		FB36C5C521C6D451004E7EFE /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = System/Library/Frameworks/CoreAudio.framework; sourceTree = SDKROOT; };
 		FB36C5C721C6D464004E7EFE /* CoreMIDI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMIDI.framework; path = System/Library/Frameworks/CoreMIDI.framework; sourceTree = SDKROOT; };
 		FB36C5C921C6D471004E7EFE /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
@@ -77,6 +79,14 @@
 				FB36C5D621CAE5F5004E7EFE /* GeneralUser GS MuseScore v1.442.sf2 */,
 			);
 			path = "MIDI support";
+			sourceTree = "<group>";
+		};
+		FB340FC221CC3BC800126A3C /* Base.lproj */ = {
+			isa = PBXGroup;
+			children = (
+				FB340FC321CC3BC800126A3C /* LaunchScreen.storyboard */,
+			);
+			path = Base.lproj;
 			sourceTree = "<group>";
 		};
 		FB36C5C421C6D451004E7EFE /* Frameworks */ = {
@@ -128,6 +138,8 @@
 				FB340FBB21CC266100126A3C /* Info.plist */,
 				FB340FBD21CC2A6300126A3C /* smallnote.png */,
 				FB340FBC21CC266500126A3C /* Default-568h@2x.png */,
+				FB340FC521CC3BDD00126A3C /* Assets.xcassets */,
+				FB340FC221CC3BC800126A3C /* Base.lproj */,
 				FB340FBA21CC234F00126A3C /* MIDI support */,
 				FB99422021C58B93009A30E4 /* Neil notes */,
 			);
@@ -223,6 +235,17 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		FB340FC321CC3BC800126A3C /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				FB340FC421CC3BC800126A3C /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		FB99420D21C58B0C009A30E4 /* Debug */ = {

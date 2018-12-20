@@ -91,7 +91,7 @@
         NSString *name = [line substringFromIndex:@"000-000 ".length];
         [instrumentList addObject:name];
     }
-    NSLog(@"Instruments read: %ld", instrumentList.count);
+    NSLog(@"Instruments read: %lu", (unsigned long)instrumentList.count);
 }
 
 - (void)viewDidLoad {

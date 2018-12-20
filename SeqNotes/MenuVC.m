@@ -24,7 +24,7 @@
 
 @end
 
-#define DEBUG_SEQ_INIT  NO
+#define DEBUG_SEQ_INIT  YES
 
 @implementation MenuVC
 
@@ -212,7 +212,7 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
 
 - (NSMutableArray *) initializeSequences {
     NSString *interestingListPath = [[NSBundle mainBundle]
-                                  pathForResource:@"Music1"ofType:@"txt"];
+                                  pathForResource:@"Music"ofType:@"txt"];
     if (!interestingListPath) {
         NSLog(@"Neil's list of interesting sequences missing");
         return nil;
