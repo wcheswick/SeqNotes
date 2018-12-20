@@ -27,6 +27,7 @@
 @property (nonatomic, strong)   UIButton *play;
 @property (nonatomic, strong)   NSTimer *checkProgressTimer;
 @property (nonatomic, strong)   NSData *currentMIDI;
+@property (nonatomic, strong)   NSMutableArray *instrumentList;
 
 @end
 
@@ -39,13 +40,58 @@
 @synthesize musicSlider;
 @synthesize player, play;
 @synthesize currentMIDI;
+@synthesize instrumentList;
 
 - (id)initWithSequence: (Sequence *)s {
     self = [super init];
     if (self) {
         sequence = s;
+        [self loadInstruments];
+        
     }
     return self;
+}
+
+- (void) loadInstruments {
+    NSString *instrumentPath = [[NSBundle mainBundle]
+                                     pathForResource:@"InstrumentList"ofType:@""];
+    if (!instrumentPath) {
+        NSLog(@"Instrument list missing, inconceivable");
+        return;
+    }
+    
+    NSError *error;
+    NSString *instrumentFileContents = [NSString stringWithContentsOfFile:instrumentPath
+                                                                 encoding:NSUTF8StringEncoding
+                                                                    error:&error];
+    if (!instrumentFileContents || [instrumentFileContents isEqualToString:@""] || error) {
+        NSLog(@"instrumentFileContents list error: %@", [error localizedDescription]);
+        return;
+    }
+    instrumentList = [[NSMutableArray alloc] init];
+    
+
+    // Entries look like this:
+    //    # from echo "inst 1" | fluidsynth "GeneralUser GS MuseScore v1.442.sf2"
+    //    000-000 Stereo Grand
+    //    000-001 Bright Grand
+    
+    NSArray *lines = [instrumentFileContents componentsSeparatedByString:@"\n"];
+    if (lines.count == 0) {
+        NSLog(@"instrumentFileContents list is empty");
+        return;
+    }
+    for (NSString *line in lines) {
+        if ([line hasPrefix:@"#"] || line.length == 0)
+            continue;
+        NSString *bank = [line substringWithRange:NSMakeRange(0, 3)];
+        if (![bank isEqualToString:@"000"])
+            continue;
+        // assume all present, and sequential
+        NSString *name = [line substringFromIndex:@"000-000 ".length];
+        [instrumentList addObject:name];
+    }
+    NSLog(@"Instruments read: %ld", instrumentList.count);
 }
 
 - (void)viewDidLoad {
@@ -102,17 +148,6 @@
              action:@selector(doPlay:)
     forControlEvents:UIControlEventTouchUpInside];
     [soundControlView addSubview:play];
-
-#ifdef notdef
-    progressView = [[UIProgressView alloc] initWithProgressViewStyle:UIProgressViewStyleDefault];
-    f.origin.x = RIGHT(f) + 20;
-    f.origin.y = f.size.height/2.0;
-    f.size.width = 200;
-    progressView.frame = f;
-    progressView.hidden = NO;
-    progressView.backgroundColor = [UIColor greenColor];
-    [soundControlView addSubview:progressView];
-#endif
     
     musicSlider = [[UISlider alloc] init];
     f.origin.x = RIGHT(f) + 20;
@@ -124,6 +159,13 @@
     musicSlider.minimumValue = 0.0;
     musicSlider.maximumValue = 1.0;
     [musicSlider addTarget:self action:@selector(doSlider:) forControlEvents:UIControlEventValueChanged];
+    UIImage *smallNote = [UIImage imageWithContentsOfFile:[[NSBundle mainBundle]
+                                          pathForResource:@"smallnote"
+                                                   ofType:@"png"]];
+    UIImage *scaledImage = [UIImage imageWithCGImage:smallNote.CGImage
+                        scale:10 //(smallNote.scale * f.size.height/smallNote.size.height)
+                  orientation:(smallNote.imageOrientation)];
+    [musicSlider setThumbImage:scaledImage forState:UIControlStateNormal];
     [soundControlView addSubview:musicSlider];
 
     [containerView addSubview:soundControlView];
@@ -212,8 +254,20 @@ long *sequenceArray = 0;
     
     if (sequence.midiData) {
         if (![myMIDI isEqualToData:sequence.midiData]) {
-        NSLog(@"David's midi: %lu", (unsigned long)sequence.midiData.length);
-        NSLog(@"     My midi: %lu", (unsigned long)myMIDI.length);
+            NSLog(@" *** midis do ot match ***");
+            if (sequence.midiData.length != myMIDI.length) {
+                NSLog(@"midi data length mismatch");
+                NSLog(@"David's midi: %lu", (unsigned long)sequence.midiData.length);
+                NSLog(@"     My midi: %lu", (unsigned long)myMIDI.length);
+            } else {
+                const u_char *a = myMIDI.bytes;
+                const u_char *b = sequence.midiData.bytes;
+                for (size_t i=0; i<myMIDI.length; i++)
+                    if (a[i] != b[i]) {
+                        NSLog(@"first difference at byte %zul of %zul", i, myMIDI.length);
+                        break;
+                    }
+            }
         }
     }
     currentMIDI = myMIDI;
@@ -256,28 +310,35 @@ long *sequenceArray = 0;
         NSLog(@"resume playing");
     }
     
-    [player play:^(void) {
-        NSLog(@"playing complete");
-        dispatch_async(dispatch_get_main_queue(), ^(void) {
-            [self stopPlayer];
-        });
-    }];
+    dispatch_queue_t aQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+    dispatch_async(aQueue, ^{
+        [self.player play:^(void) {
+            NSLog(@"playing complete");
+            dispatch_async(dispatch_get_main_queue(), ^(void) {
+                [self stopPlayer];
+            });
+        }];
+    });
+
     
     play.selected = YES;
     [play setNeedsDisplay];
     
-    musicSlider.value = 0.0;
+    musicSlider.value = self.player.currentPosition/self.player.duration;
     musicSlider.hidden = NO;
     [musicSlider setNeedsDisplay];
 
-    checkProgressTimer = [NSTimer timerWithTimeInterval:1 repeats:YES block:^(NSTimer *timer) {
-        dispatch_async(dispatch_get_main_queue(), ^(void) {
-            float fracDone = self.player.currentPosition/self.player.duration;
-            NSLog(@"tick %.2f", fracDone);
-            [self.musicSlider setValue:fracDone animated:YES];
-            [self.musicSlider setNeedsDisplay];
-        });
-    }];
+    checkProgressTimer = [NSTimer scheduledTimerWithTimeInterval:1.0
+                                     target:self
+                                   selector:@selector(tick)
+                                   userInfo:nil
+                                    repeats:YES];
+}
+
+- (void) tick {
+    float fracDone = self.player.currentPosition/self.player.duration;
+    [self.musicSlider setValue:fracDone animated:YES];
+    [self.musicSlider setNeedsDisplay];
 }
 
 - (IBAction)doSlider:(UIView *)sender {
