@@ -7,12 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		FB340FB821CBCD2500126A3C /* SeqToMIDI.c in Sources */ = {isa = PBXBuildFile; fileRef = FB340FB721CBCD2500126A3C /* SeqToMIDI.c */; };
 		FB36C5C621C6D451004E7EFE /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FB36C5C521C6D451004E7EFE /* CoreAudio.framework */; };
 		FB36C5C821C6D464004E7EFE /* CoreMIDI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FB36C5C721C6D464004E7EFE /* CoreMIDI.framework */; };
 		FB36C5CA21C6D471004E7EFE /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FB36C5C921C6D471004E7EFE /* AudioToolbox.framework */; };
-		FB36C5CD21C6D661004E7EFE /* play.midi in Resources */ = {isa = PBXBuildFile; fileRef = FB36C5CC21C6D661004E7EFE /* play.midi */; };
 		FB36C5CF21C6E5FF004E7EFE /* simpletest.mid in Resources */ = {isa = PBXBuildFile; fileRef = FB36C5CE21C6E5FF004E7EFE /* simpletest.mid */; };
-		FB36C5D121C6F14D004E7EFE /* web.midi in Resources */ = {isa = PBXBuildFile; fileRef = FB36C5D021C6F14D004E7EFE /* web.midi */; };
 		FB36C5D721CAE5F5004E7EFE /* GeneralUser GS MuseScore v1.442.sf2 in Resources */ = {isa = PBXBuildFile; fileRef = FB36C5D621CAE5F5004E7EFE /* GeneralUser GS MuseScore v1.442.sf2 */; };
 		FB36C5D921CAF4D9004E7EFE /* Acoustic Guitars JNv2.4.sf2 in Resources */ = {isa = PBXBuildFile; fileRef = FB36C5D821CAF4D9004E7EFE /* Acoustic Guitars JNv2.4.sf2 */; };
 		FB36C5DB21CAFB33004E7EFE /* InstrumentList in Resources */ = {isa = PBXBuildFile; fileRef = FB36C5DA21CAFB33004E7EFE /* InstrumentList */; };
@@ -31,12 +30,12 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		FB340FB621CBCD2500126A3C /* SeqToMIDI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SeqToMIDI.h; sourceTree = "<group>"; };
+		FB340FB721CBCD2500126A3C /* SeqToMIDI.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SeqToMIDI.c; sourceTree = "<group>"; };
 		FB36C5C521C6D451004E7EFE /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = System/Library/Frameworks/CoreAudio.framework; sourceTree = SDKROOT; };
 		FB36C5C721C6D464004E7EFE /* CoreMIDI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMIDI.framework; path = System/Library/Frameworks/CoreMIDI.framework; sourceTree = SDKROOT; };
 		FB36C5C921C6D471004E7EFE /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
-		FB36C5CC21C6D661004E7EFE /* play.midi */ = {isa = PBXFileReference; lastKnownFileType = audio.midi; path = play.midi; sourceTree = "<group>"; };
 		FB36C5CE21C6E5FF004E7EFE /* simpletest.mid */ = {isa = PBXFileReference; lastKnownFileType = audio.midi; path = simpletest.mid; sourceTree = "<group>"; };
-		FB36C5D021C6F14D004E7EFE /* web.midi */ = {isa = PBXFileReference; lastKnownFileType = audio.midi; path = web.midi; sourceTree = "<group>"; };
 		FB36C5D621CAE5F5004E7EFE /* GeneralUser GS MuseScore v1.442.sf2 */ = {isa = PBXFileReference; lastKnownFileType = file; path = "GeneralUser GS MuseScore v1.442.sf2"; sourceTree = "<group>"; };
 		FB36C5D821CAF4D9004E7EFE /* Acoustic Guitars JNv2.4.sf2 */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Acoustic Guitars JNv2.4.sf2"; sourceTree = "<group>"; };
 		FB36C5DA21CAFB33004E7EFE /* InstrumentList */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = InstrumentList; sourceTree = "<group>"; };
@@ -118,6 +117,8 @@
 				FB99421A21C58B89009A30E4 /* BrowseOEISVC.m */,
 				FB99422421C58B9E009A30E4 /* Sequence.h */,
 				FB99422621C58B9E009A30E4 /* Sequence.m */,
+				FB340FB621CBCD2500126A3C /* SeqToMIDI.h */,
+				FB340FB721CBCD2500126A3C /* SeqToMIDI.c */,
 				FB99422821C58B9E009A30E4 /* UICircularProgressView.h */,
 				FB99422921C58B9E009A30E4 /* UICircularProgressView.m */,
 				FB99421821C58B88009A30E4 /* Default-568h@2x.png */,
@@ -129,8 +130,6 @@
 				FB36C5D621CAE5F5004E7EFE /* GeneralUser GS MuseScore v1.442.sf2 */,
 				FB36C5DA21CAFB33004E7EFE /* InstrumentList */,
 				FB36C5D821CAF4D9004E7EFE /* Acoustic Guitars JNv2.4.sf2 */,
-				FB36C5CC21C6D661004E7EFE /* play.midi */,
-				FB36C5D021C6F14D004E7EFE /* web.midi */,
 				FB36C5CE21C6E5FF004E7EFE /* simpletest.mid */,
 				FB99420B21C58B0C009A30E4 /* main.m */,
 			);
@@ -205,11 +204,9 @@
 				FB36C5D921CAF4D9004E7EFE /* Acoustic Guitars JNv2.4.sf2 in Resources */,
 				FB99421B21C58B89009A30E4 /* Default-568h@2x.png in Resources */,
 				FB36C5CF21C6E5FF004E7EFE /* simpletest.mid in Resources */,
-				FB36C5CD21C6D661004E7EFE /* play.midi in Resources */,
 				FB99422121C58B93009A30E4 /* Music1.txt in Resources */,
 				FB99422321C58B93009A30E4 /* Neil notes in Resources */,
 				FB99421621C58B7B009A30E4 /* Assets.xcassets in Resources */,
-				FB36C5D121C6F14D004E7EFE /* web.midi in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -223,6 +220,7 @@
 				FB99421C21C58B89009A30E4 /* BrowseOEISVC.m in Sources */,
 				FB99422A21C58B9E009A30E4 /* ShowSeqVC.m in Sources */,
 				FB99422B21C58B9E009A30E4 /* Sequence.m in Sources */,
+				FB340FB821CBCD2500126A3C /* SeqToMIDI.c in Sources */,
 				FB99422C21C58B9E009A30E4 /* UICircularProgressView.m in Sources */,
 				FB99422221C58B93009A30E4 /* MenuVC.m in Sources */,
 				FB99421421C58B74009A30E4 /* AppDelegate.m in Sources */,

@@ -9,10 +9,12 @@
 #import <UIKit/UIKit.h>
 #import "Sequence.h"
 
+#import <MessageUI/MessageUI.h>
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface ShowSeqVC : UIViewController
-    <UIScrollViewDelegate>
+    <UIScrollViewDelegate, MFMailComposeViewControllerDelegate>
 
 - (id)initWithSequence: (Sequence *)s;
 

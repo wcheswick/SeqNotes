@@ -6,6 +6,7 @@
 //  Copyright © 2018 Cheswick.com. All rights reserved.
 //
 
+#import "SeqToMIDI.h"
 #import "Sequence.h"
 
 @implementation Sequence
@@ -184,20 +185,26 @@
             NSLog(@"        %d: value format error: '%@'", lineno, line);
             break;
         }
+        number = [fields objectAtIndex:1];
         if (!values)
             values = [[NSMutableArray alloc] initWithCapacity:lines.count];
         [values addObject:@([number integerValue])];
     }
 }
 
-#define PIANO   1   // piano
-#define MARIMBA   13
-#define ALTOSAX     65
-
 - (void) fetchMIDI {
     NSMutableData *body = [NSMutableData data];
-    [body appendData:[[NSString stringWithFormat:@"midi=1&SAVE=SAVE&seq=%@&bpm=100&vol=100&voice=%d&velon=80&veloff=80&pmod=88&poff=20&dmod=1&doff=0&cutoff=4096\n",
-                       seq, ALTOSAX]
+    NSString *davesParams = [NSString stringWithFormat:@"midi=1&SAVE=SAVE&seq=%@&bpm=100&vol=100&voice=%d&velon=80&veloff=80&pmod=88&poff=20&dmod=1&doff=0&cutoff=4096\n",
+                             seq, VOICE];
+    NSString *appParams  = [NSString stringWithFormat:@"midi=1&SAVE=SAVE&seq=%@&bpm=%d&vol=%d&voice=%d&velon=%d&veloff=%d&pmod=%d&poff=%d&dmod=%d&doff=%d&cutoff=%d\n",
+                           seq, BPM, VOL, VOICE, VELON, VELOFF, PMOD, POFF, DMOD, DOFF, CUTOFF];
+    
+    if (![davesParams isEqualToString:appParams]) {
+        NSLog(@"%@", davesParams);
+        NSLog(@"%@", appParams);
+        NSLog(@"param generations not right yet");
+    }
+    [body appendData:[davesParams
                       dataUsingEncoding:NSUTF8StringEncoding]];
     
     midiData = [[NSMutableData alloc] init];

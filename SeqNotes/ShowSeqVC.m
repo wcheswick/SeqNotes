@@ -10,6 +10,8 @@
 #import <AVFoundation/AVFoundation.h>
 #import <AudioToolbox/MusicPlayer.h>
 
+#import "SeqToMIDI.h"
+
 #import "ShowSeqVC.h"
 #import "Defines.h"
 
@@ -24,6 +26,7 @@
 @property (nonatomic, strong)   AVMIDIPlayer *player;
 @property (nonatomic, strong)   UIButton *play;
 @property (nonatomic, strong)   NSTimer *checkProgressTimer;
+@property (nonatomic, strong)   NSData *currentMIDI;
 
 @end
 
@@ -35,6 +38,7 @@
 @synthesize checkProgressTimer;
 @synthesize musicSlider;
 @synthesize player, play;
+@synthesize currentMIDI;
 
 - (id)initWithSequence: (Sequence *)s {
     self = [super init];
@@ -52,6 +56,7 @@
     self.title = sequence.seq;
     player = nil;
     checkProgressTimer = nil;
+    currentMIDI = nil;
     
     UIBarButtonItem *leftBarButton = [[UIBarButtonItem alloc]
                                       initWithBarButtonSystemItem:UIBarButtonSystemItemDone
@@ -175,12 +180,45 @@
     checkProgressTimer = nil;
 }
 
+long *sequenceArray = 0;
+
+- (long *) makeArray {
+    sequenceArray = (long *)malloc(sizeof(long)*sequence.values.count);
+    assert (sequenceArray);
+    for (size_t i=0; i<sequence.values.count; i++) {
+        NSNumber *n = [sequence.values objectAtIndex:i];
+        sequenceArray[i] = [n longValue];
+    }
+    return sequenceArray;
+}
+
 - (void) doPlayer {
     OSStatus rc;
     NSError *error;
 
+    NSString *midiTmp = [NSTemporaryDirectory() stringByAppendingPathComponent:@"midi.tmp"];
+    NSFileManager *mgr = [NSFileManager defaultManager];
+    if (![mgr fileExistsAtPath:midiTmp])
+        [mgr createFileAtPath:midiTmp contents:nil attributes:nil];
+    NSFileHandle *midiFileHandle = [NSFileHandle fileHandleForUpdatingAtPath:midiTmp];
+    
+    NSLog(@"generate MIDI...");
+    seqToMidi(midiFileHandle.fileDescriptor, [self makeArray], sequence.values.count,
+              1, 1, 1, BPM, 0, VOL, VOICE, VELON, VELOFF, PMOD, POFF, DMOD, DOFF, CUTOFF);
+    [midiFileHandle closeFile];
+    
+    NSData *myMIDI = [NSData dataWithContentsOfFile:midiTmp];
+    [mgr removeItemAtPath:midiTmp error:nil];
+    
+    if (sequence.midiData) {
+        if (![myMIDI isEqualToData:sequence.midiData]) {
+        NSLog(@"David's midi: %lu", (unsigned long)sequence.midiData.length);
+        NSLog(@"     My midi: %lu", (unsigned long)myMIDI.length);
+        }
+    }
+    currentMIDI = myMIDI;
+
     if (!player) {  // initialize
-        
         NSString *bankPath = [[NSBundle mainBundle]
                               pathForResource:@"GeneralUser GS MuseScore v1.442"
                               ofType:@"sf2"];
@@ -198,19 +236,19 @@
         MusicSequence s;
         // Initialise the music sequence
         NewMusicSequence(&s);
-        rc = MusicSequenceFileLoadData (s, (__bridge CFDataRef _Nonnull)(sequence.midiData), 0, 0);
+        rc = MusicSequenceFileLoadData (s, (__bridge CFDataRef _Nonnull)(currentMIDI), 0, 0);
         if (rc) {
             [self musicError:@"MusicSequenceFileLoadData" err:rc];
             return;
         }
-        player = [[AVMIDIPlayer alloc] initWithData:sequence.midiData soundBankURL:bankURL error:&error];
+        player = [[AVMIDIPlayer alloc] initWithData:currentMIDI soundBankURL:bankURL error:&error];
         if (error) {
             NSLog(@"player initialization error: %@", [error localizedDescription]);
             return;
         }
         
         NSLog(@"preparing %@, data length: %lu duration %.1fs",
-              sequence.seq, (unsigned long)sequence.midiData.length, player.duration);
+              sequence.seq, (unsigned long)currentMIDI.length, player.duration);
         
         [player prepareToPlay];
         NSLog(@"start playing");
@@ -245,7 +283,6 @@
 - (IBAction)doSlider:(UIView *)sender {
     UISlider *view = (UISlider *)sender;
     player.currentPosition = view.value * player.duration;
-    
 }
 
 - (void) musicError:(NSString *) mesg err:(OSStatus) rc {
@@ -277,6 +314,62 @@
     
     SET_VIEW_WIDTH(containerView, scrollView.frame.size.width);
     scrollView.contentSize = containerView.frame.size;
+}
+
+- (void) mail:(NSString *) filePath {
+    NSString *emailTitle = [NSString
+                            stringWithFormat:@"my MIDI file"];
+    
+    NSString *messageBody = [NSString stringWithFormat:@"My midi file"];
+    
+    MFMailComposeViewController *mc = [[MFMailComposeViewController alloc] init];
+    mc.mailComposeDelegate = self;
+    [mc setSubject:emailTitle];
+    [mc setToRecipients:[NSArray arrayWithObjects:@"bc@cheswick.com", nil]];
+    [mc setMessageBody:messageBody isHTML:NO];
+    
+    // Add attachments
+    [mc addAttachmentData:[NSData dataWithContentsOfFile:filePath] mimeType:@"text/plain"
+                 fileName:[@"mystuff" stringByAppendingPathExtension:@"dat"]];
+    [mc addAttachmentData:[NSData dataWithData:sequence.midiData] mimeType:@"text/plain"
+                 fileName:[@"daves" stringByAppendingPathExtension:@"dat"]];
+
+    // Present mail view controller on screen
+    [self presentViewController:mc animated:YES completion:NULL];
+}
+
+- (void) mailComposeController:(MFMailComposeViewController *)controller
+           didFinishWithResult:(MFMailComposeResult)result
+                         error:(NSError *)error {
+    if (error)
+        NSLog(@"mail error %@", [error localizedDescription]);
+    switch (result) {
+        case MFMailComposeResultCancelled:
+            break;
+        case MFMailComposeResultSaved:
+            break;
+        case MFMailComposeResultSent:
+            break;
+        case MFMailComposeResultFailed: {
+            NSLog(@"Mail sent failure: %@", [error localizedDescription]);
+            UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"Mail failed"
+                                                                           message:nil
+                                                                    preferredStyle:UIAlertControllerStyleAlert];
+            
+            UIAlertAction* defaultAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault
+                                                                  handler:^(UIAlertAction * action) {}];
+            
+            [alert addAction:defaultAction];
+            [self presentViewController:alert animated:YES completion:nil];
+            break;
+        }
+        default:
+            NSLog(@"inconceivable: unknown mail result %ld", (long)result);
+            break;
+    }
+    
+    // Close the Mail Interface
+    [self dismissViewControllerAnimated:YES completion:NULL];
 }
 
 @end
