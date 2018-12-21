@@ -10,8 +10,10 @@
 #define Defines_h
 
 
-#define OEIS_URL    @"https://oeis.org/"
-#define SEQUENCES_ARCHIVE        @"./Sequences.archive"   // archived ordered list of apiaries
+#define OEIS_URL            @"https://oeis.org/"
+
+#define SEQUENCES_ARCHIVE   @"./Sequences.archive"   // archived ordered list of apiaries
+#define PLAY_OPTIONS_ARCHIVE    @"./PlayOptions.archive"
 
 // screen layout stuff
 

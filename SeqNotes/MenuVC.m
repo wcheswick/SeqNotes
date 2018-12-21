@@ -24,8 +24,6 @@
 
 @end
 
-#define DEBUG_SEQ_INIT  YES
-
 @implementation MenuVC
 
 @synthesize sequences, currentSequence, incomingSequences;
@@ -51,20 +49,9 @@
 
     // Uncomment the following line to preserve selection between presentations.
     self.clearsSelectionOnViewWillAppear = NO;
-}
-
-- (void) viewDidAppear:(BOOL)animated {
-    [super viewDidAppear:animated];
     
     sequences = [NSKeyedUnarchiver unarchiveObjectWithFile:SEQUENCES_ARCHIVE];
-    if (sequences) {    // do we have mididata?  old bug, needs reloading if no
-        Sequence *one = [sequences objectAtIndex:0];
-        if (!one.midiData || one.midiData.length == 0) {
-            NSLog(@"midi data missing, reload everything");
-            sequences = nil;
-        }
-    }
-    if (DEBUG_SEQ_INIT || !sequences) {
+    if (!sequences) {
         sequences = [[NSMutableArray alloc] init];
         incomingSequences = [self initializeSequences];
         NSLog(@"loading %lu new sequences", (unsigned long)incomingSequences.count);
@@ -89,12 +76,17 @@
 #endif
             [self.tableView reloadData];
             [self loadNextNewSequence];
-       }
+        }
     }
     //    for (Sequence *s in sequences)
     //        NSLog(@"%@  samples: %lu", s.seq, (unsigned long)s.values.count);
     
     [self.tableView reloadData];
+
+}
+
+- (void) viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
 }
 
 - (void) loadNextNewSequence {
@@ -104,7 +96,7 @@
             progressView = nil;
         }
         incomingSequences = 0;
-        [self saveSequences];
+        [self save];
         [self.tableView reloadData];
         return;
     }
@@ -285,7 +277,7 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     return newSequences;
 }
 
-- (void) saveSequences {
+- (void) save {
     if (![NSKeyedArchiver archiveRootObject:sequences
                                      toFile:SEQUENCES_ARCHIVE])
         NSLog(@"sequences save failed");

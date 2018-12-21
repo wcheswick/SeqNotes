@@ -14,7 +14,10 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface ShowSeqVC : UIViewController
-    <UIScrollViewDelegate, MFMailComposeViewControllerDelegate>
+    <UIScrollViewDelegate,
+    MFMailComposeViewControllerDelegate,
+    UIPickerViewDataSource,
+    UIPickerViewDelegate>
 
 - (id)initWithSequence: (Sequence *)s;
 

@@ -51,6 +51,7 @@
     self = [super init];
     if (self) {
         seq = [coder decodeObjectForKey: kSeq];
+        NSLog(@"restoring %@", seq);
         name = [coder decodeObjectForKey: kName];
         description = [coder decodeObjectForKey: kDescription];
         shortTitle = [coder decodeObjectForKey: kShortTitle];
@@ -58,7 +59,8 @@
         values = [coder decodeObjectForKey:kValues];
         plotData = [coder decodeObjectForKey:kPlotData];
         midiData = [coder decodeObjectForKey:kMidiData];
-   }
+        NSLog(@"restored, %d values", values.count);
+    }
     return self;
 }
 

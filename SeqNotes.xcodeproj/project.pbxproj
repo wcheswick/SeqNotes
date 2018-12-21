@@ -19,10 +19,12 @@
 		FB99421421C58B74009A30E4 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = FB99421221C58B74009A30E4 /* AppDelegate.m */; };
 		FB99421C21C58B89009A30E4 /* BrowseOEISVC.m in Sources */ = {isa = PBXBuildFile; fileRef = FB99421A21C58B89009A30E4 /* BrowseOEISVC.m */; };
 		FB99422221C58B93009A30E4 /* MenuVC.m in Sources */ = {isa = PBXBuildFile; fileRef = FB99421F21C58B93009A30E4 /* MenuVC.m */; };
-		FB99422321C58B93009A30E4 /* Neil notes in Resources */ = {isa = PBXBuildFile; fileRef = FB99422021C58B93009A30E4 /* Neil notes */; };
 		FB99422A21C58B9E009A30E4 /* ShowSeqVC.m in Sources */ = {isa = PBXBuildFile; fileRef = FB99422521C58B9E009A30E4 /* ShowSeqVC.m */; };
 		FB99422B21C58B9E009A30E4 /* Sequence.m in Sources */ = {isa = PBXBuildFile; fileRef = FB99422621C58B9E009A30E4 /* Sequence.m */; };
 		FB99422C21C58B9E009A30E4 /* UICircularProgressView.m in Sources */ = {isa = PBXBuildFile; fileRef = FB99422921C58B9E009A30E4 /* UICircularProgressView.m */; };
+		FBEBED3D21CD2AF000D41433 /* Music.txt in Resources */ = {isa = PBXBuildFile; fileRef = FBEBED3C21CD2AC200D41433 /* Music.txt */; };
+		FBEBED3E21CD319600D41433 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FB340FC521CC3BDD00126A3C /* Assets.xcassets */; };
+		FBEBED4121CD364000D41433 /* PlayOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = FBEBED4021CD364000D41433 /* PlayOptions.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -55,6 +57,9 @@
 		FB99422721C58B9E009A30E4 /* ShowSeqVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ShowSeqVC.h; sourceTree = "<group>"; };
 		FB99422821C58B9E009A30E4 /* UICircularProgressView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UICircularProgressView.h; sourceTree = "<group>"; };
 		FB99422921C58B9E009A30E4 /* UICircularProgressView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UICircularProgressView.m; sourceTree = "<group>"; };
+		FBEBED3C21CD2AC200D41433 /* Music.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = Music.txt; sourceTree = "<group>"; };
+		FBEBED3F21CD364000D41433 /* PlayOptions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PlayOptions.h; sourceTree = "<group>"; };
+		FBEBED4021CD364000D41433 /* PlayOptions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PlayOptions.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -74,6 +79,7 @@
 		FB340FBA21CC234F00126A3C /* MIDI support */ = {
 			isa = PBXGroup;
 			children = (
+				FBEBED3C21CD2AC200D41433 /* Music.txt */,
 				FB36C5D821CAF4D9004E7EFE /* Acoustic Guitars JNv2.4.sf2 */,
 				FB36C5DA21CAFB33004E7EFE /* InstrumentList */,
 				FB36C5D621CAE5F5004E7EFE /* GeneralUser GS MuseScore v1.442.sf2 */,
@@ -126,6 +132,8 @@
 				FB99421F21C58B93009A30E4 /* MenuVC.m */,
 				FB99422721C58B9E009A30E4 /* ShowSeqVC.h */,
 				FB99422521C58B9E009A30E4 /* ShowSeqVC.m */,
+				FBEBED3F21CD364000D41433 /* PlayOptions.h */,
+				FBEBED4021CD364000D41433 /* PlayOptions.m */,
 				FB99421921C58B89009A30E4 /* BrowseOEISVC.h */,
 				FB99421A21C58B89009A30E4 /* BrowseOEISVC.m */,
 				FB99422421C58B9E009A30E4 /* Sequence.h */,
@@ -208,10 +216,11 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FBEBED3E21CD319600D41433 /* Assets.xcassets in Resources */,
+				FBEBED3D21CD2AF000D41433 /* Music.txt in Resources */,
 				FB36C5DB21CAFB33004E7EFE /* InstrumentList in Resources */,
 				FB36C5D721CAE5F5004E7EFE /* GeneralUser GS MuseScore v1.442.sf2 in Resources */,
 				FB36C5D921CAF4D9004E7EFE /* Acoustic Guitars JNv2.4.sf2 in Resources */,
-				FB99422321C58B93009A30E4 /* Neil notes in Resources */,
 				FB340FBE21CC2A6300126A3C /* smallnote.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -230,6 +239,7 @@
 				FB99422C21C58B9E009A30E4 /* UICircularProgressView.m in Sources */,
 				FB99422221C58B93009A30E4 /* MenuVC.m in Sources */,
 				FB99421421C58B74009A30E4 /* AppDelegate.m in Sources */,
+				FBEBED4121CD364000D41433 /* PlayOptions.m in Sources */,
 				FB99420C21C58B0C009A30E4 /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -367,6 +377,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = HK64XTSZFA;
 				INFOPLIST_FILE = SeqNotes/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -384,6 +395,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = HK64XTSZFA;
 				INFOPLIST_FILE = SeqNotes/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
