@@ -1,17 +1,17 @@
 //
-//  MenuVC.m
-//  SeqShow
+//  MainVC.m
+//  SeqNotes
 //
-//  Created by ches on 12/12/18.
+//  Created by ches on 12/21/18.
 //  Copyright © 2018 Cheswick.com. All rights reserved.
 //
 
-#import "MenuVC.h"
+#import "MainVC.h"
 #import "ShowSeqVC.h"
 #import "UICircularProgressView.h"
 #import "Defines.h"
 
-@interface MenuVC ()
+@interface MainVC ()
 
 @property (nonatomic, strong)   NSMutableArray *sequences;
 @property (nonatomic, strong)   NSMutableArray *incomingSequences;
@@ -22,19 +22,23 @@
 
 @end
 
-@implementation MenuVC
+@implementation MainVC
 
-@synthesize sequences, currentSequence, incomingSequences;
-@synthesize sequencesToLoad, sequencesLoaded;
-@synthesize progressView;
+static NSString * const reuseIdentifier = @"Cell";
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     
+    // Uncomment the following line to preserve selection between presentations
+    self.clearsSelectionOnViewWillAppear = YES;
+    
+    // Register cell classes
+    [self.collectionView registerClass:[UICollectionViewCell class] forCellWithReuseIdentifier:reuseIdentifier];
+    
     incomingSequences = nil;
     progressView = nil;
-//    setenv("CFNETWORK_DIAGNOSTICS", "1", 1);
-
+    //    setenv("CFNETWORK_DIAGNOSTICS", "1", 1);
+    
     self.navigationController.navigationBar.hidden = NO;
     self.navigationController.navigationBar.opaque = YES;
     self.title = @"SeqShow";
@@ -44,7 +48,7 @@
                                        target:self action:@selector(doGotoOEIS:)];
     rightBarButton.enabled = NO;
     self.navigationItem.rightBarButtonItem = rightBarButton;
-
+    
     // Uncomment the following line to preserve selection between presentations.
     self.clearsSelectionOnViewWillAppear = NO;
     
@@ -76,11 +80,6 @@
             [self loadNextNewSequence];
         }
     }
-    //    for (Sequence *s in sequences)
-    //        NSLog(@"%@  samples: %lu", s.seq, (unsigned long)s.values.count);
-    
-    [self.tableView reloadData];
-
 }
 
 - (void) loadNextNewSequence {
@@ -106,36 +105,44 @@
 - (void) addSequence: (Sequence *)sequence {
     [sequences addObject:sequence];
     sequencesLoaded++;
-//    CGPoint offset = CGPointMake(0, self.tableView.contentSize.height - self.tableView.frame.size.height);
-//    [self.tableView setContentOffset:offset];
+    //    CGPoint offset = CGPointMake(0, self.tableView.contentSize.height - self.tableView.frame.size.height);
+    //    [self.tableView setContentOffset:offset];
     [self.tableView reloadData];
     [self loadNextNewSequence];
 }
 
 - (IBAction)doGotoOEIS:(UISwipeGestureRecognizer *)sender {
-//    LogVC *lvc = [[LogVC alloc] initWithLog:log];
-//    //    self.navigationController.toolbarHidden = NO;
-//    [[self navigationController] pushViewController: lvc animated: YES];
+    //    LogVC *lvc = [[LogVC alloc] initWithLog:log];
+    //    //    self.navigationController.toolbarHidden = NO;
+    //    [[self navigationController] pushViewController: lvc animated: YES];
 }
 
-#pragma mark - Table view data source
+/*
+#pragma mark - Navigation
 
-- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+#pragma mark <UICollectionViewDataSource>
+
+- (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView {
     return 1;
 }
 
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+
+- (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
     int statusCell = (incomingSequences && incomingSequences > 0) ? 1 : 0;
     return sequences.count + statusCell;
 }
 
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    static NSString *CellIdentifier = @"SeqCell";
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
-    if (cell == nil) {
-        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle
-                                      reuseIdentifier:CellIdentifier];
-    }
+- (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView
+                  cellForItemAtIndexPath:(NSIndexPath *)indexPath {
+    UICollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:reuseIdentifier forIndexPath:indexPath];
+    
     if (indexPath.row >= sequences.count) { // this is the loading status row
         UIActivityIndicatorView *active = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
         active.frame = cell.accessoryView.frame;
@@ -148,56 +155,43 @@
                                [seq titleToUse]];
         cell.detailTextLabel.text = [seq subtitleToUse];
         cell.backgroundColor = (seq && seq.midiData.length > 0) ?
-            [UIColor whiteColor] : [UIColor redColor];
+        [UIColor whiteColor] : [UIColor redColor];
     }
+
     return cell;
 }
 
-- (void)tableView:(UITableView *)tableView
-didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+#pragma mark <UICollectionViewDelegate>
+
+- (BOOL)collectionView:(UICollectionView *)collectionView shouldHighlightItemAtIndexPath:(NSIndexPath *)indexPath {
+	return YES;
+}
+
+- (BOOL)collectionView:(UICollectionView *)collectionView shouldSelectItemAtIndexPath:(NSIndexPath *)indexPath {
+    return YES;
+}
+
+/*
+// Uncomment these methods to specify if an action menu should be displayed for the specified item, and react to actions performed on the item
+- (BOOL)collectionView:(UICollectionView *)collectionView shouldShowMenuForItemAtIndexPath:(NSIndexPath *)indexPath {
+	return NO;
+}
+ */
+
+- (BOOL)collectionView:(UICollectionView *)collectionView canPerformAction:(SEL)action forItemAtIndexPath:(NSIndexPath *)indexPath withSender:(id)sender {
+	return YES;
+}
+
+- (void)collectionView:(UICollectionView *)collectionView performAction:(SEL)action forItemAtIndexPath:(NSIndexPath *)indexPath withSender:(id)sender {
     Sequence *seq = [sequences objectAtIndex:indexPath.row];
     ShowSeqVC *svc = [[ShowSeqVC alloc] initWithSequence:seq];
     svc.view.frame = self.view.frame;
     [self.navigationController pushViewController:svc animated:YES];
 }
 
-/*
-// Override to support conditional editing of the table view.
-- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
-    // Return NO if you do not want the specified item to be editable.
-    return YES;
-}
-*/
-
-/*
-// Override to support editing the table view.
-- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (editingStyle == UITableViewCellEditingStyleDelete) {
-        // Delete the row from the data source
-        [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
-    } else if (editingStyle == UITableViewCellEditingStyleInsert) {
-        // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-    }   
-}
-*/
-
-/*
-// Override to support rearranging the table view.
-- (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath {
-}
-*/
-
-/*
-// Override to support conditional rearranging of the table view.
-- (BOOL)tableView:(UITableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath {
-    // Return NO if you do not want the item to be re-orderable.
-    return YES;
-}
-*/
-
 - (NSMutableArray *) initializeSequences {
     NSString *interestingListPath = [[NSBundle mainBundle]
-                                  pathForResource:@"Music"ofType:@"txt"];
+                                     pathForResource:@"Music"ofType:@"txt"];
     if (!interestingListPath) {
         NSLog(@"Neil's list of interesting sequences missing");
         return nil;
@@ -218,7 +212,7 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     // Comment: Number of numbers <= n and relatively prime to n.
     // Music: Two midi files, the standard one, and one using Rate=40, Release Velocity=20, Duration offset=1, Instrument = 103 (FX7)
     // entries are separated by one or more blank lines. We assume at least one blank line at the end.
-
+    
     NSArray *lines = [interestingList componentsSeparatedByString:@"\n"];
     NSLog(@" number of interesting lines: %lu", (unsigned long)lines.count);
     if (lines.count == 0) {

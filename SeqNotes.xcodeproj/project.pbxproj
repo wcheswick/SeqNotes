@@ -25,6 +25,7 @@
 		FBEBED3D21CD2AF000D41433 /* Music.txt in Resources */ = {isa = PBXBuildFile; fileRef = FBEBED3C21CD2AC200D41433 /* Music.txt */; };
 		FBEBED3E21CD319600D41433 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FB340FC521CC3BDD00126A3C /* Assets.xcassets */; };
 		FBEBED4121CD364000D41433 /* PlayOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = FBEBED4021CD364000D41433 /* PlayOptions.m */; };
+		FBEBED4421CD864400D41433 /* MainVC.m in Sources */ = {isa = PBXBuildFile; fileRef = FBEBED4321CD864400D41433 /* MainVC.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -60,6 +61,8 @@
 		FBEBED3C21CD2AC200D41433 /* Music.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = Music.txt; sourceTree = "<group>"; };
 		FBEBED3F21CD364000D41433 /* PlayOptions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PlayOptions.h; sourceTree = "<group>"; };
 		FBEBED4021CD364000D41433 /* PlayOptions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PlayOptions.m; sourceTree = "<group>"; };
+		FBEBED4221CD864400D41433 /* MainVC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MainVC.h; sourceTree = "<group>"; };
+		FBEBED4321CD864400D41433 /* MainVC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MainVC.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -130,6 +133,8 @@
 				FB99421221C58B74009A30E4 /* AppDelegate.m */,
 				FB99421E21C58B93009A30E4 /* MenuVC.h */,
 				FB99421F21C58B93009A30E4 /* MenuVC.m */,
+				FBEBED4221CD864400D41433 /* MainVC.h */,
+				FBEBED4321CD864400D41433 /* MainVC.m */,
 				FB99422721C58B9E009A30E4 /* ShowSeqVC.h */,
 				FB99422521C58B9E009A30E4 /* ShowSeqVC.m */,
 				FBEBED3F21CD364000D41433 /* PlayOptions.h */,
@@ -239,6 +244,7 @@
 				FB99422C21C58B9E009A30E4 /* UICircularProgressView.m in Sources */,
 				FB99422221C58B93009A30E4 /* MenuVC.m in Sources */,
 				FB99421421C58B74009A30E4 /* AppDelegate.m in Sources */,
+				FBEBED4421CD864400D41433 /* MainVC.m in Sources */,
 				FBEBED4121CD364000D41433 /* PlayOptions.m in Sources */,
 				FB99420C21C58B0C009A30E4 /* main.m in Sources */,
 			);
