@@ -15,6 +15,8 @@
 #define SEQUENCES_ARCHIVE   @"./Sequences.archive"   // archived ordered list of apiaries
 #define PLAY_OPTIONS_ARCHIVE    @"./PlayOptions.archive"
 
+#define MAX_VALUES  (200*10)    // 200 beats per minute for 10 minutes
+
 // screen layout stuff
 
 #define SMALL_SEP   5.0

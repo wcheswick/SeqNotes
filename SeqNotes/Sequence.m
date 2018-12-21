@@ -8,6 +8,7 @@
 
 #import "SeqToMIDI.h"
 #import "Sequence.h"
+#import "Defines.h"
 
 @implementation Sequence
 
@@ -51,7 +52,6 @@
     self = [super init];
     if (self) {
         seq = [coder decodeObjectForKey: kSeq];
-        NSLog(@"restoring %@", seq);
         name = [coder decodeObjectForKey: kName];
         description = [coder decodeObjectForKey: kDescription];
         shortTitle = [coder decodeObjectForKey: kShortTitle];
@@ -59,7 +59,6 @@
         values = [coder decodeObjectForKey:kValues];
         plotData = [coder decodeObjectForKey:kPlotData];
         midiData = [coder decodeObjectForKey:kMidiData];
-        NSLog(@"restored, %d values", values.count);
     }
     return self;
 }
@@ -191,6 +190,8 @@
         if (!values)
             values = [[NSMutableArray alloc] initWithCapacity:lines.count];
         [values addObject:@([number integerValue])];
+        if (values.count >= MAX_VALUES)
+            break;
     }
 }
 

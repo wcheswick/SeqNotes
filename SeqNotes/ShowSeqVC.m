@@ -25,9 +25,9 @@
 @property (nonatomic, strong)   UISlider *musicSlider;
 @property (nonatomic, strong)   UIProgressView *progressView;
 @property (nonatomic, strong)   AVMIDIPlayer *player;
+@property (nonatomic, strong)   NSData *oldMIDI, *currentMIDI;
 @property (nonatomic, strong)   UIButton *play;
 @property (nonatomic, strong)   NSTimer *checkProgressTimer;
-@property (nonatomic, strong)   NSData *currentMIDI;
 @property (nonatomic, strong)   NSMutableArray *instrumentList;
 @property (nonatomic, strong)   UIPickerView *instrumentPicker;
 @property (nonatomic, strong)   PlayOptions *playOptions;
@@ -44,18 +44,20 @@
 @synthesize checkProgressTimer;
 @synthesize musicSlider;
 @synthesize player, play;
-@synthesize currentMIDI;
 @synthesize instrumentList;
 @synthesize instrumentPicker;
 @synthesize playOptions;
 @synthesize playerOp;
 @synthesize rateSlider;
+@synthesize oldMIDI, currentMIDI;
 
 - (id)initWithSequence: (Sequence *)s {
     self = [super init];
     if (self) {
         sequence = s;
         playerOp = nil;
+        // these must not be released until we are done with a player switch
+        oldMIDI = currentMIDI = nil;
         [self loadInstruments];
         
         playOptions = [NSKeyedUnarchiver unarchiveObjectWithFile:PLAY_OPTIONS_ARCHIVE];
@@ -117,7 +119,6 @@
     self.title = sequence.seq;
     player = nil;
     checkProgressTimer = nil;
-    currentMIDI = nil;
     
     UIBarButtonItem *leftBarButton = [[UIBarButtonItem alloc]
                                       initWithBarButtonSystemItem:UIBarButtonSystemItemDone
@@ -264,19 +265,26 @@ numberOfRowsInComponent:(NSInteger)component {
           [instrumentList objectAtIndex:row]);
     playOptions.instrumentIndex = row;
     [playOptions save];
-    
-    BOOL playing = player && player.playing;
-    
-    currentMIDI = nil;
     [self switchToNewPlayer];
-    if (playing)
-        [self startPlayer];
+}
+
+- (IBAction)doChangePosition:(UIView *)sender {
+    UISlider *view = (UISlider *)sender;
+    player.currentPosition = view.value * player.duration;
+}
+
+- (IBAction)doChangeRate:(UIView *)sender {
+    UISlider *slider = (UISlider *)sender;
+    playOptions.beatsPerMinute = slider.value;
+    [playOptions save];
+    [self switchToNewPlayer];
 }
 
 - (IBAction)doPlay:(UIView *)sender {
     if (!play.selected) {
-        if (!player)
-            [self switchToNewPlayer];
+        if (!player) {
+            player = [self makePlayer];
+        }
         [self startPlayer];
     } else {
         [self pausePlayer];
@@ -288,76 +296,81 @@ numberOfRowsInComponent:(NSInteger)component {
         [player stop];
     }
     [checkProgressTimer invalidate];
+    checkProgressTimer = nil;
+    play.selected = NO;
+    [play setNeedsDisplay];
 }
 
 - (void) stopPlayer {
+    [self pausePlayer];
     if (player) {
         [player stop];
-        player = nil;
     }
-    play.selected = NO;
-    [play setNeedsDisplay];
-    [checkProgressTimer invalidate];
-    checkProgressTimer = nil;
+    player = nil;
 }
 
-long *sequenceArray = 0;
-
-- (long *) makeArray {
-    sequenceArray = (long *)malloc(sizeof(long)*sequence.values.count);
-    assert (sequenceArray);
-    for (size_t i=0; i<sequence.values.count; i++) {
-        NSNumber *n = [sequence.values objectAtIndex:i];
-        sequenceArray[i] = [n longValue];
-    }
-    return sequenceArray;
-}
-
-// Generate a new player from current play settings, turn of the old, if any, and
-// fire up the new one in the same place.  Regen the MIDI if necessary.
-
-- (void) switchToNewPlayer {
+- (AVMIDIPlayer *) makePlayer { // from current instrument and rate settings
     OSStatus rc;
-    NSError *error;
-    if (!currentMIDI)
-        currentMIDI = [self genMIDI];
+    NSData *newMIDI = [self genMIDI];
     
     NSString *bankPath = [[NSBundle mainBundle]
                           pathForResource:@"GeneralUser GS MuseScore v1.442"
                           ofType:@"sf2"];
     if (!bankPath) {
         NSLog(@"inconceivable, soundsfont file is missing");
-        return;
+        return nil;
     }
     NSURL *bankURL = [NSURL fileURLWithPath:bankPath];
     
     MusicSequence s;
     // Initialise the music sequence
     NewMusicSequence(&s);
+    
+    oldMIDI = currentMIDI;  // keep the old point around for current player
+    currentMIDI = newMIDI;
     rc = MusicSequenceFileLoadData (s, (__bridge CFDataRef _Nonnull)(currentMIDI), 0, 0);
     if (rc) {
         [self musicError:@"MusicSequenceFileLoadData" err:rc];
-        return;
+        return nil;
     }
+    
+    NSError *error;
     
     AVMIDIPlayer *newPlayer = [[AVMIDIPlayer alloc] initWithData:currentMIDI soundBankURL:bankURL error:&error];
     if (error) {
         NSLog(@"player initialization error: %@", [error localizedDescription]);
+        return nil;
+    }
+    return newPlayer;
+}
+
+// Generate a new player from current play settings, turn of the old, if any, and
+// fire up the new one in the same place.  Regen the MIDI if necessary.
+
+- (void) switchToNewPlayer {
+    AVMIDIPlayer *newPlayer = [self makePlayer];
+    if (!newPlayer) {
+        NSLog(@" ** inconceivable, player creation error");
         return;
     }
     
-    if (player) {   // we have a current player, switch over to the new
-        newPlayer.currentPosition = player.currentPosition;
-        [self stopPlayer];
-        NSLog(@"playing %d", player.playing);
-        [playerOp cancelAllOperations];
-        playerOp = nil;
-        NSLog(@"Playing %d", player.playing);
-   } else {
-        newPlayer.currentPosition = 0;
+    int currentPosition = -1;   // >= 0 if we are playing
+    if (player) {   // Do we have a current player?
+        if (player.playing) {   // if it is playing, stop it
+            currentPosition = player.currentPosition;
+            [self pausePlayer];
+            [player stop];
+        }
     }
     player = newPlayer;
+    player.currentPosition = currentPosition >= 0 ? currentPosition : 0;
+    [self pausePlayer];
+#ifdef notyet
     [player prepareToPlay];
+    if (currentPosition >= 0) {
+        [self startPlayer];
+    }
+#endif
 }
 
 - (void) startPlayer {
@@ -386,6 +399,24 @@ long *sequenceArray = 0;
                                     repeats:YES];
 }
 
+- (void) tick {
+    float fracDone = self.player.currentPosition/self.player.duration;
+    [self.musicSlider setValue:fracDone animated:YES];
+    [self.musicSlider setNeedsDisplay];
+}
+
+long *sequenceArray = 0;
+
+- (long *) makeArray {
+    sequenceArray = (long *)malloc(sizeof(long)*sequence.values.count);
+    assert (sequenceArray);
+    for (size_t i=0; i<sequence.values.count; i++) {
+        NSNumber *n = [sequence.values objectAtIndex:i];
+        sequenceArray[i] = [n longValue];
+    }
+    return sequenceArray;
+}
+
 - (NSData *) genMIDI {
     NSString *midiTmp = [NSTemporaryDirectory() stringByAppendingPathComponent:@"midi.tmp"];
     NSFileManager *mgr = [NSFileManager defaultManager];
@@ -398,22 +429,27 @@ long *sequenceArray = 0;
               1, 1, 1,
               (int)playOptions.beatsPerMinute,
               0, VOL,
-              (int)playOptions.instrumentIndex,
+              (int)playOptions.instrumentIndex + 1, // midi is 1-based
               VELON, VELOFF,
-              PMOD, POFF, DMOD, DOFF, CUTOFF);
+              PMOD, POFF, DMOD, DOFF, MAX_VALUES);
     [midiFileHandle closeFile];
+    free(sequenceArray);    // crude
+    sequenceArray = 0;
+    
+    //    [self mail:midiTmp];
     
     NSData *myMIDI = [NSData dataWithContentsOfFile:midiTmp];
     [mgr removeItemAtPath:midiTmp error:nil];
-    
+
+#ifdef DEBUGGING_MIDI
     if (sequence.midiData) {
         if (![myMIDI isEqualToData:sequence.midiData]) {
             NSLog(@" *** midis do not match ***");
-            if (sequence.midiData.length != myMIDI.length) {
-                NSLog(@"midi data length mismatch");
-                NSLog(@"David's midi: %lu", (unsigned long)sequence.midiData.length);
-                NSLog(@"     My midi: %lu", (unsigned long)myMIDI.length);
-            } else {
+//            if (sequence.midiData.length != myMIDI.length) {
+//                NSLog(@"midi data length mismatch");
+//                NSLog(@"David's midi: %lu", (unsigned long)sequence.midiData.length);
+//                NSLog(@"     My midi: %lu", (unsigned long)myMIDI.length);
+ //           } else {
                 const u_char *a = myMIDI.bytes;
                 const u_char *b = sequence.midiData.bytes;
                 for (size_t i=0; i<myMIDI.length; i++)
@@ -421,32 +457,11 @@ long *sequenceArray = 0;
                         NSLog(@"first difference at byte %zul of %zul", i, myMIDI.length);
                         break;
                     }
-            }
+ //           }
         }
     }
+#endif
     return myMIDI;
-}
-
-- (void) tick {
-    float fracDone = self.player.currentPosition/self.player.duration;
-    [self.musicSlider setValue:fracDone animated:YES];
-    [self.musicSlider setNeedsDisplay];
-}
-
-- (IBAction)doChangePosition:(UIView *)sender {
-    UISlider *view = (UISlider *)sender;
-    player.currentPosition = view.value * player.duration;
-}
-
-- (IBAction)doChangeRate:(UIView *)sender {
-    UISlider *slider = (UISlider *)sender;
-    playOptions.beatsPerMinute = slider.value;
-    [playOptions save];
-    BOOL playing = player.playing;
-    currentMIDI = nil;
-    [self switchToNewPlayer];
-    if (playing)
-        [self startPlayer];
 }
 
 - (void) musicError:(NSString *) mesg err:(OSStatus) rc {
@@ -494,9 +509,7 @@ long *sequenceArray = 0;
     
     // Add attachments
     [mc addAttachmentData:[NSData dataWithContentsOfFile:filePath] mimeType:@"text/plain"
-                 fileName:[@"mystuff" stringByAppendingPathExtension:@"dat"]];
-    [mc addAttachmentData:[NSData dataWithData:sequence.midiData] mimeType:@"text/plain"
-                 fileName:[@"daves" stringByAppendingPathExtension:@"dat"]];
+                 fileName:[filePath lastPathComponent]];
 
     // Present mail view controller on screen
     [self presentViewController:mc animated:YES completion:NULL];
