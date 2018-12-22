@@ -197,10 +197,10 @@
 
 - (void) fetchMIDI {
     NSMutableData *body = [NSMutableData data];
-    NSString *davesParams = [NSString stringWithFormat:@"midi=1&SAVE=SAVE&seq=%@&bpm=100&vol=100&voice=%d&velon=80&veloff=80&pmod=88&poff=20&dmod=1&doff=0&cutoff=4096\n",
-                             seq, VOICE];
+    NSString *davesParams = [NSString stringWithFormat:@"midi=1&SAVE=SAVE&seq=%@&bpm=100&vol=100&voice=%d&velon=80&veloff=80&pmod=88&poff=20&dmod=1&doff=0&cutoff=%d\n",
+                             seq, VOICE, MAX_VALUES];
     NSString *appParams  = [NSString stringWithFormat:@"midi=1&SAVE=SAVE&seq=%@&bpm=%d&vol=%d&voice=%d&velon=%d&veloff=%d&pmod=%d&poff=%d&dmod=%d&doff=%d&cutoff=%d\n",
-                           seq, BPM, VOL, VOICE, VELON, VELOFF, PMOD, POFF, DMOD, DOFF, CUTOFF];
+                           seq, BPM, VOL, VOICE, VELON, VELOFF, PMOD, POFF, DMOD, DOFF, MAX_VALUES];
     
     if (![davesParams isEqualToString:appParams]) {
         NSLog(@"%@", davesParams);

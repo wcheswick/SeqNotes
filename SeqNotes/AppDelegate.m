@@ -8,10 +8,12 @@
 
 #import "AppDelegate.h"
 #import "MenuVC.h"
+#import "MainVC.h"
 
 @interface AppDelegate ()
 
 @property (nonatomic, strong)   MenuVC *menuVC;
+@property (nonatomic, strong)   MainVC *mainVC;
 
 @end
 
@@ -19,6 +21,7 @@
 
 @synthesize navController;
 @synthesize menuVC;
+@synthesize mainVC;
 
 - (BOOL)application:(UIApplication *)application
 didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
@@ -29,9 +32,15 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     self.window = [[UIWindow alloc]
                    initWithFrame:[[UIScreen mainScreen]
                                   bounds]];
+#ifdef NEWLAYOUT
+    mainVC = [[MainVC alloc] initWithCollectionViewLayout:UICollectionViewFlowLayout];
+    self.navController = [[UINavigationController alloc]
+                          initWithRootViewController: mainVC];
+#else
     menuVC = [[MenuVC alloc] init];
     self.navController = [[UINavigationController alloc]
                           initWithRootViewController: menuVC];
+#endif
     self.window.rootViewController = navController;
     [self.window makeKeyAndVisible];
     return YES;

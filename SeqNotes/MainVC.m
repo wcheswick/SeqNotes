@@ -8,6 +8,7 @@
 
 #import "MainVC.h"
 #import "ShowSeqVC.h"
+#import "SeqThumbView.h"
 #import "UICircularProgressView.h"
 #import "Defines.h"
 
@@ -23,6 +24,10 @@
 @end
 
 @implementation MainVC
+
+@synthesize sequences, currentSequence, incomingSequences;
+@synthesize sequencesToLoad, sequencesLoaded;
+@synthesize progressView;
 
 static NSString * const reuseIdentifier = @"Cell";
 
@@ -76,7 +81,7 @@ static NSString * const reuseIdentifier = @"Cell";
             [self.view bringSubviewToFront:progressView];
             [self.view setNeedsDisplay];
 #endif
-            [self.tableView reloadData];
+            [self.collectionView reloadData];
             [self loadNextNewSequence];
         }
     }
@@ -90,7 +95,7 @@ static NSString * const reuseIdentifier = @"Cell";
         }
         incomingSequences = 0;
         [self save];
-        [self.tableView reloadData];
+        [self.collectionView reloadData];
         return;
     }
     Sequence *s = [incomingSequences objectAtIndex:0];
@@ -107,7 +112,7 @@ static NSString * const reuseIdentifier = @"Cell";
     sequencesLoaded++;
     //    CGPoint offset = CGPointMake(0, self.tableView.contentSize.height - self.tableView.frame.size.height);
     //    [self.tableView setContentOffset:offset];
-    [self.tableView reloadData];
+    [self.collectionView reloadData];
     [self loadNextNewSequence];
 }
 
@@ -145,22 +150,23 @@ static NSString * const reuseIdentifier = @"Cell";
     
     if (indexPath.row >= sequences.count) { // this is the loading status row
         UIActivityIndicatorView *active = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
-        active.frame = cell.accessoryView.frame;
+        active.frame = cell.frame;
         [active startAnimating];
-        cell.accessoryType = UITableViewCellAccessoryDetailButton;
-        cell.accessoryView = active;
     } else {
         Sequence *seq = [sequences objectAtIndex:indexPath.row];
-        cell.textLabel.text = [NSString stringWithFormat:@"%@:  %@", seq.seq,
-                               [seq titleToUse]];
-        cell.detailTextLabel.text = [seq subtitleToUse];
-        cell.backgroundColor = (seq && seq.midiData.length > 0) ?
-        [UIColor whiteColor] : [UIColor redColor];
+        SeqThumbView *stv = [[SeqThumbView alloc] initWithSequence:seq];
+        stv.frame = cell.frame;
+        [cell addSubview:stv];
     }
-
     return cell;
 }
 
+
+- (CGSize)collectionView:(UICollectionView *)collectionView
+                  layout:(UICollectionViewLayout *)collectionViewLayout
+  sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
+    return CGSizeMake(SEQ_W, SEQ_H);
+}
 #pragma mark <UICollectionViewDelegate>
 
 - (BOOL)collectionView:(UICollectionView *)collectionView shouldHighlightItemAtIndexPath:(NSIndexPath *)indexPath {
