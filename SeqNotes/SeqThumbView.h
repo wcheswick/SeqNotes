@@ -9,15 +9,19 @@
 #import <UIKit/UIKit.h>
 #import "Sequence.h"
 
-#define SEQ_W   (300/2)
-#define SEQ_H   SEQ_W
+#define SEQ_W   (320)
+#define EAR_W   30
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface SeqThumbView : UIView
+@interface SeqThumbView : UIView {
+    Sequence *sequence;
+}
 
+@property (nonatomic, strong)   Sequence *sequence;
 
 - (id)initWithSequence: (Sequence *)s;
+- (void) adjustThumb;
 
 @end
 

@@ -14,6 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol sequenceProtocol <NSObject>
 
 - (void) addSequence: (Sequence *)sequence;
+- (void) valuesFetchedForSequence:(Sequence *)sequence;
 
 @end
 
@@ -21,6 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
     NSString *seq, *name, *description;
     NSString *shortTitle, *shortComment;    // manual, from startup file
     NSMutableArray *values;
+    BOOL valuesUnavailable;
     NSData *plotData;
     NSData *midiData;
     id<sequenceProtocol> target;
@@ -31,13 +33,15 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong)   NSMutableArray *values;
 @property (nonatomic, strong)   NSData *plotData;
 @property (nonatomic, strong)   NSData *midiData;
+@property (assign)              BOOL valuesUnavailable;
 @property (nonatomic, strong)   id<sequenceProtocol> target;
 
 - (id)initSequence: (NSString *)seq;
-- (void) loadDataFromOEIS:(id<sequenceProtocol>)caller;
+- (void) loadBasicDataFromOEIS:(id<sequenceProtocol>)caller;
+- (void) fetchValues;
 - (NSString *) titleToUse;
 - (NSString *) subtitleToUse;
-- (void) dump ;
+- (void) dump;
 
 NS_ASSUME_NONNULL_END
 

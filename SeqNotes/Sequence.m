@@ -14,7 +14,7 @@
 
 @synthesize seq, name, description;
 @synthesize shortTitle, shortComment;
-@synthesize values;
+@synthesize values, valuesUnavailable;
 @synthesize plotData, midiData;
 @synthesize target;
 
@@ -25,7 +25,9 @@
         name = description = @"";
         shortTitle = shortComment = nil;
         plotData = midiData = nil;
+        description = nil;
         values = nil;
+        valuesUnavailable = NO;
         target = nil;
     }
     return self;
@@ -45,6 +47,7 @@
 #define kShortTitle     @"ShortTitle"
 #define kShortComment   @"ShortComment"
 #define kValues         @"Values"
+#define kValuesUnavailable  @"ValuesUnavailable"
 #define kPlotData       @"PlotData"
 #define kMidiData       @"MidiData"
 
@@ -57,6 +60,7 @@
         shortTitle = [coder decodeObjectForKey: kShortTitle];
         shortComment = [coder decodeObjectForKey: kShortComment];
         values = [coder decodeObjectForKey:kValues];
+        valuesUnavailable = [coder decodeBoolForKey:kValuesUnavailable];
         plotData = [coder decodeObjectForKey:kPlotData];
         midiData = [coder decodeObjectForKey:kMidiData];
     }
@@ -70,24 +74,27 @@
     [coder encodeObject:shortTitle forKey:kShortTitle];
     [coder encodeObject:shortComment forKey:kShortComment];
     [coder encodeObject:values forKey:kValues];
+    [coder encodeBool:valuesUnavailable forKey:kValuesUnavailable];
     [coder encodeObject:plotData forKey:kPlotData];
     [coder encodeObject:midiData forKey:kMidiData];
 }
 
-- (void) loadDataFromOEIS:(id<sequenceProtocol>)caller {
+- (void) loadBasicDataFromOEIS:(id<sequenceProtocol>)caller {
     target = caller;
-    NSLog(@"%@ fetch from OEIS ...", seq);
     [self fetchFromOEIS];
+#ifdef later
     NSLog(@"    fetch plots ...");
     [self fetchPlots];
     NSLog(@"    ... plot size is %lu; fetch values ...", (unsigned long)plotData.length);
     [self fetchValues];
     NSLog(@"    ... number of values: %lu; fetch MIDI ...",  (unsigned long)values.count);
     [self fetchMIDI];   // calls downloadComplete when finished
+#endif
+    [self downloadComplete];
 }
 
 - (void) downloadComplete {
-    NSLog(@"    ... MIDI length %lu, fetch complete", (unsigned long)midiData.length);
+//    NSLog(@"    ... MIDI length %lu, fetch complete", (unsigned long)midiData.length);
     dispatch_async(dispatch_get_main_queue(), ^(void){
         [self->target addSequence:self];
     });
@@ -161,6 +168,7 @@
 }
 
 - (void) fetchValues {
+    NSLog(@"%@ fetch values ...", seq);
     NSString *number = [[seq substringFromIndex:@"A".length] substringToIndex:@"000000".length];
     NSString *plotUrl = [NSString stringWithFormat:@"https://oeis.org/%@/b%@.txt", seq, number];
     NSURL *URL = [NSURL URLWithString:plotUrl];
@@ -170,29 +178,33 @@
                                                      error:&error];
     if (!contents) {
         NSLog(@"OEIS values load failed for %@: %@", seq, [error localizedDescription]);
+        valuesUnavailable = YES;
         return;
-    }
-    NSArray *lines = [contents componentsSeparatedByString:@"\n"];
-    //    NSLog(@" number of text lines for %@: %lu", seq, (unsigned long)lines.count);
-    
-    // two fields, an ordinal, and a (potentially very large) integer
-    int lineno = 0;
-    for (NSString *line in lines) {
-        if ([line isEqualToString:@""])
-            continue;
-        NSArray *fields = [line componentsSeparatedByString:@" "];
-        lineno++;
-        if (fields.count != 2) {
-            NSLog(@"        %d: value format error: '%@'", lineno, line);
-            break;
+    } else {
+        NSArray *lines = [contents componentsSeparatedByString:@"\n"];
+        
+        // two fields, an ordinal, and a (potentially very large) integer
+        int lineno = 0;
+        for (NSString *line in lines) {
+            if ([line isEqualToString:@""])
+                continue;
+            NSArray *fields = [line componentsSeparatedByString:@" "];
+            lineno++;
+            if (fields.count != 2) {
+                NSLog(@"        %d: value format error: '%@'", lineno, line);
+                break;
+            }
+            number = [fields objectAtIndex:1];
+            if (!values)
+                values = [[NSMutableArray alloc] initWithCapacity:lines.count];
+            [values addObject:@([number integerValue])];
+            if (values.count >= MAX_VALUES)
+                break;
         }
-        number = [fields objectAtIndex:1];
-        if (!values)
-            values = [[NSMutableArray alloc] initWithCapacity:lines.count];
-        [values addObject:@([number integerValue])];
-        if (values.count >= MAX_VALUES)
-            break;
     }
+    dispatch_async(dispatch_get_main_queue(), ^(void){
+        [self->target valuesFetchedForSequence:self];
+    });
 }
 
 - (void) fetchMIDI {

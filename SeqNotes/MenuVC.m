@@ -72,15 +72,9 @@
             [self.view bringSubviewToFront:progressView];
             [self.view setNeedsDisplay];
 #endif
-            [self.tableView reloadData];
             [self loadNextNewSequence];
         }
     }
-    //    for (Sequence *s in sequences)
-    //        NSLog(@"%@  samples: %lu", s.seq, (unsigned long)s.values.count);
-    
-    [self.tableView reloadData];
-
 }
 
 - (void) loadNextNewSequence {
@@ -99,7 +93,7 @@
     
     dispatch_queue_t aQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
     dispatch_async(aQueue, ^{
-        [s loadDataFromOEIS: self];     // read data asynchronously
+        [s loadBasicDataFromOEIS: self];     // read data asynchronously
     });
 }
 

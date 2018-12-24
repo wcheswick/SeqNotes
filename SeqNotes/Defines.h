@@ -45,13 +45,12 @@
 #define LARGE_FONT_SIZE 22
 #define LARGE_H (LARGE_FONT_SIZE+9)
 
-#define INDENT      5.0
+#define INSET       3.0
 #define SWITCH_H    40.0
 #define NAME_HEIGHT (SWITCH_H - 10.0)
 
 #define TOP_LABEL_Y 70
 #define SWITCH_W    100.0
-#define INDENT      5.0
 #define SEGMENT_BUTTON_H    50.0
 
 #define LINE_H  35          // space for a line on display

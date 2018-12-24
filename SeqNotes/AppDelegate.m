@@ -17,6 +17,8 @@
 
 @end
 
+#define NEWLAYOUT   1
+
 @implementation AppDelegate
 
 @synthesize navController;
@@ -33,7 +35,7 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
                    initWithFrame:[[UIScreen mainScreen]
                                   bounds]];
 #ifdef NEWLAYOUT
-    mainVC = [[MainVC alloc] initWithCollectionViewLayout:UICollectionViewFlowLayout];
+    mainVC = [[MainVC alloc] init];
     self.navController = [[UINavigationController alloc]
                           initWithRootViewController: mainVC];
 #else

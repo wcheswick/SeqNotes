@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		FB08BDA521D13D9D009307AA /* ear.jpg in Resources */ = {isa = PBXBuildFile; fileRef = FB08BDA421D13D9D009307AA /* ear.jpg */; };
 		FB340FB821CBCD2500126A3C /* SeqToMIDI.c in Sources */ = {isa = PBXBuildFile; fileRef = FB340FB721CBCD2500126A3C /* SeqToMIDI.c */; };
 		FB340FBE21CC2A6300126A3C /* smallnote.png in Resources */ = {isa = PBXBuildFile; fileRef = FB340FBD21CC2A6300126A3C /* smallnote.png */; };
 		FB36C5C621C6D451004E7EFE /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FB36C5C521C6D451004E7EFE /* CoreAudio.framework */; };
@@ -18,7 +19,6 @@
 		FB99420C21C58B0C009A30E4 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = FB99420B21C58B0C009A30E4 /* main.m */; };
 		FB99421421C58B74009A30E4 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = FB99421221C58B74009A30E4 /* AppDelegate.m */; };
 		FB99421C21C58B89009A30E4 /* BrowseOEISVC.m in Sources */ = {isa = PBXBuildFile; fileRef = FB99421A21C58B89009A30E4 /* BrowseOEISVC.m */; };
-		FB99422221C58B93009A30E4 /* MenuVC.m in Sources */ = {isa = PBXBuildFile; fileRef = FB99421F21C58B93009A30E4 /* MenuVC.m */; };
 		FB99422A21C58B9E009A30E4 /* ShowSeqVC.m in Sources */ = {isa = PBXBuildFile; fileRef = FB99422521C58B9E009A30E4 /* ShowSeqVC.m */; };
 		FB99422B21C58B9E009A30E4 /* Sequence.m in Sources */ = {isa = PBXBuildFile; fileRef = FB99422621C58B9E009A30E4 /* Sequence.m */; };
 		FB99422C21C58B9E009A30E4 /* UICircularProgressView.m in Sources */ = {isa = PBXBuildFile; fileRef = FB99422921C58B9E009A30E4 /* UICircularProgressView.m */; };
@@ -30,6 +30,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		FB08BDA421D13D9D009307AA /* ear.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = ear.jpg; sourceTree = "<group>"; };
 		FB340FB621CBCD2500126A3C /* SeqToMIDI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SeqToMIDI.h; sourceTree = "<group>"; };
 		FB340FB721CBCD2500126A3C /* SeqToMIDI.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SeqToMIDI.c; sourceTree = "<group>"; };
 		FB340FBB21CC266100126A3C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -82,6 +83,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		FB08BDA321D13D8B009307AA /* Support files */ = {
+			isa = PBXGroup;
+			children = (
+				FB08BDA421D13D9D009307AA /* ear.jpg */,
+			);
+			path = "Support files";
+			sourceTree = "<group>";
+		};
 		FB340FBA21CC234F00126A3C /* MIDI support */ = {
 			isa = PBXGroup;
 			children = (
@@ -159,6 +168,7 @@
 				FB340FC521CC3BDD00126A3C /* Assets.xcassets */,
 				FB340FC221CC3BC800126A3C /* Base.lproj */,
 				FB340FBA21CC234F00126A3C /* MIDI support */,
+				FB08BDA321D13D8B009307AA /* Support files */,
 				FB99422021C58B93009A30E4 /* Neil notes */,
 			);
 			path = SeqNotes;
@@ -232,6 +242,7 @@
 				FB36C5D721CAE5F5004E7EFE /* GeneralUser GS MuseScore v1.442.sf2 in Resources */,
 				FB36C5D921CAF4D9004E7EFE /* Acoustic Guitars JNv2.4.sf2 in Resources */,
 				FB340FBE21CC2A6300126A3C /* smallnote.png in Resources */,
+				FB08BDA521D13D9D009307AA /* ear.jpg in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -248,7 +259,6 @@
 				FB340FB821CBCD2500126A3C /* SeqToMIDI.c in Sources */,
 				FB99422C21C58B9E009A30E4 /* UICircularProgressView.m in Sources */,
 				FBDC07A521CD8CA000A7F0FF /* SeqThumbView.m in Sources */,
-				FB99422221C58B93009A30E4 /* MenuVC.m in Sources */,
 				FB99421421C58B74009A30E4 /* AppDelegate.m in Sources */,
 				FBEBED4421CD864400D41433 /* MainVC.m in Sources */,
 				FBEBED4121CD364000D41433 /* PlayOptions.m in Sources */,

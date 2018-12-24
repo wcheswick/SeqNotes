@@ -18,27 +18,43 @@
 @property (nonatomic, strong)   NSMutableArray *incomingSequences;
 @property (nonatomic, strong)   UICircularProgressView *progressView;
 @property (nonatomic, strong)   NSString *currentSequence;
+@property (nonatomic, strong)   UICollectionView *collectionView;
 
-@property (assign)              long sequencesToLoad, sequencesLoaded;
+@property (nonatomic, strong)   NSMutableArray *seqThumbViews;
+
+@property (assign)              long dataLoadsRunning;
 
 @end
 
 @implementation MainVC
 
 @synthesize sequences, currentSequence, incomingSequences;
-@synthesize sequencesToLoad, sequencesLoaded;
+@synthesize dataLoadsRunning;
 @synthesize progressView;
+@synthesize collectionView;
+@synthesize seqThumbViews;
 
 static NSString * const reuseIdentifier = @"Cell";
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+
+    self.view = [[UIView alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+    seqThumbViews = [[NSMutableArray alloc] initWithCapacity:sequences.count];
+
+    UICollectionViewFlowLayout *layout= [[UICollectionViewFlowLayout alloc] init];
+    collectionView = [[UICollectionView alloc]
+                      initWithFrame:self.view.frame
+                      collectionViewLayout:layout];
+    [collectionView setDataSource:self];
+    [collectionView setDelegate:self];
     
-    // Uncomment the following line to preserve selection between presentations
-    self.clearsSelectionOnViewWillAppear = YES;
+    [self.collectionView registerClass:[UICollectionViewCell class]
+            forCellWithReuseIdentifier:reuseIdentifier];
+    [collectionView setBackgroundColor:[UIColor whiteColor]];
+    [self.view addSubview:collectionView];
     
     // Register cell classes
-    [self.collectionView registerClass:[UICollectionViewCell class] forCellWithReuseIdentifier:reuseIdentifier];
     
     incomingSequences = nil;
     progressView = nil;
@@ -54,36 +70,90 @@ static NSString * const reuseIdentifier = @"Cell";
     rightBarButton.enabled = NO;
     self.navigationItem.rightBarButtonItem = rightBarButton;
     
-    // Uncomment the following line to preserve selection between presentations.
-    self.clearsSelectionOnViewWillAppear = NO;
-    
     sequences = [NSKeyedUnarchiver unarchiveObjectWithFile:SEQUENCES_ARCHIVE];
     if (!sequences) {
         sequences = [[NSMutableArray alloc] init];
         incomingSequences = [self initializeSequences];
         NSLog(@"loading %lu new sequences", (unsigned long)incomingSequences.count);
-        sequencesLoaded = 0;
-        sequencesToLoad = incomingSequences.count;
-        if (incomingSequences && incomingSequences.count > 0) {
-#ifdef PROGVIEW
-            CGRect f;
-            f.size = CGSizeMake(50, 50);
-            f.origin = CGPointMake((self.view.frame.size.width - f.size.width)/2.0,
-                                   (self.view.frame.size.height - f.size.height)/3.0);
-            progressView = [[UICircularProgressView alloc] initWithFrame:f];
-            progressView.trackTintColor = [UIColor clearColor];
-            progressView.progressTintColor = [UIColor blueColor];
-            progressView.progressViewStyle = UICircularProgressViewStylePie;
-            progressView.backgroundColor = [UIColor clearColor];
-            progressView.opaque = NO;
-            progressView.progress = 0.0;
-            [self.view addSubview:progressView];
-            [self.view bringSubviewToFront:progressView];
-            [self.view setNeedsDisplay];
-#endif
-            [self.collectionView reloadData];
-            [self loadNextNewSequence];
+
+        CGRect f;
+        f.size = CGSizeMake(50, 50);
+        f.origin = CGPointMake((self.view.frame.size.width - f.size.width)/2.0,
+                               (self.view.frame.size.height - f.size.height)/3.0);
+        progressView = [[UICircularProgressView alloc] initWithFrame:f];
+        progressView.trackTintColor = [UIColor clearColor];
+        progressView.progressTintColor = [UIColor blueColor];
+        progressView.progressViewStyle = UICircularProgressViewStylePie;
+        progressView.backgroundColor = [UIColor clearColor];
+        progressView.opaque = NO;
+        progressView.progress = 0.0;
+        [self.view addSubview:progressView];
+        [self.view bringSubviewToFront:progressView];
+        [self.view setNeedsDisplay];
+        
+        [self loadNextNewSequence];
+    } else {
+        incomingSequences = nil;
+        [self showSequences];
+    }
+    dataLoadsRunning = 0;
+    [self checkDataNeeded];
+    [collectionView reloadData];
+}
+
+- (void) checkDataNeeded {
+    if (dataLoadsRunning)
+        return; // busy, for now
+    for (SeqThumbView *stv in seqThumbViews) {
+        Sequence *seq = stv.sequence;
+        if (seq.valuesUnavailable)
+            continue;   // don't try
+        if (seq.values)
+            continue;   // already have it
+        dataLoadsRunning++;
+        dispatch_queue_t aQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+        dispatch_async(aQueue, ^{
+            seq.target = self;
+            [seq fetchValues];
+        });
+        break;  // only do one
+    }
+}
+
+- (void) valuesFetchedForSequence:(Sequence *)sequence {
+    dataLoadsRunning--;
+    [self checkDataNeeded];
+    for (int i=0; i<seqThumbViews.count; i++) {
+        SeqThumbView *stv = [seqThumbViews objectAtIndex:i];
+        Sequence *seq = stv.sequence;
+        if ([seq.seq isEqualToString:sequence.seq]) {   // found our slot
+            seq.target = self;
+            [stv adjustThumb];
+            return;
         }
+    }
+}
+
+- (void) addThumbView:(Sequence *) sequence {
+    SeqThumbView *thumbView = [[SeqThumbView alloc] initWithSequence:sequence];
+    [seqThumbViews addObject:thumbView];
+    [collectionView reloadData];
+}
+
+- (void) updateThumbAt:(int) index {
+    [self.collectionView reloadData];
+#ifdef broken
+    [self.collectionView reloadItemsAtIndexPaths:@[[NSIndexPath
+                                                    indexPathForRow:index
+                                                    inSection:0]]];
+#endif
+}
+
+- (void) showSequences {
+    for (int i=0; i<sequences.count; i++) {
+        Sequence *s = [sequences objectAtIndex:i];
+        [self addThumbView:s];
+        [self updateThumbAt:i];
     }
 }
 
@@ -93,7 +163,7 @@ static NSString * const reuseIdentifier = @"Cell";
             [progressView removeFromSuperview];
             progressView = nil;
         }
-        incomingSequences = 0;
+        incomingSequences = nil;
         [self save];
         [self.collectionView reloadData];
         return;
@@ -103,17 +173,15 @@ static NSString * const reuseIdentifier = @"Cell";
     
     dispatch_queue_t aQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
     dispatch_async(aQueue, ^{
-        [s loadDataFromOEIS: self];     // read data asynchronously
+        [s loadBasicDataFromOEIS: self];     // read data asynchronously
     });
 }
 
 - (void) addSequence: (Sequence *)sequence {
     [sequences addObject:sequence];
-    sequencesLoaded++;
-    //    CGPoint offset = CGPointMake(0, self.tableView.contentSize.height - self.tableView.frame.size.height);
-    //    [self.tableView setContentOffset:offset];
-    [self.collectionView reloadData];
+    [self addThumbView:sequence];
     [self loadNextNewSequence];
+    [self checkDataNeeded];
 }
 
 - (IBAction)doGotoOEIS:(UISwipeGestureRecognizer *)sender {
@@ -138,36 +206,30 @@ static NSString * const reuseIdentifier = @"Cell";
     return 1;
 }
 
-
-- (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
-    int statusCell = (incomingSequences && incomingSequences > 0) ? 1 : 0;
-    return sequences.count + statusCell;
+- (NSInteger)collectionView:(UICollectionView *)collectionView
+     numberOfItemsInSection:(NSInteger)section {
+    return seqThumbViews.count;
 }
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView
                   cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     UICollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:reuseIdentifier forIndexPath:indexPath];
-    
-    if (indexPath.row >= sequences.count) { // this is the loading status row
-        UIActivityIndicatorView *active = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
-        active.frame = cell.frame;
-        [active startAnimating];
-    } else {
-        Sequence *seq = [sequences objectAtIndex:indexPath.row];
-        SeqThumbView *stv = [[SeqThumbView alloc] initWithSequence:seq];
-        stv.frame = cell.frame;
-        [cell addSubview:stv];
-    }
+    SeqThumbView *thumbView = [seqThumbViews objectAtIndex:indexPath.row];
+    [cell addSubview:thumbView];
     return cell;
 }
-
 
 - (CGSize)collectionView:(UICollectionView *)collectionView
                   layout:(UICollectionViewLayout *)collectionViewLayout
   sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
-    return CGSizeMake(SEQ_W, SEQ_H);
+    SeqThumbView *thumbView = [seqThumbViews objectAtIndex:indexPath.row];
+    return thumbView.frame.size;
 }
+
 #pragma mark <UICollectionViewDelegate>
+    
+#ifdef notdef
+    // Uncomment these methods to specify if an action menu should be displayed for the specified item, and react to actions performed on the item
 
 - (BOOL)collectionView:(UICollectionView *)collectionView shouldHighlightItemAtIndexPath:(NSIndexPath *)indexPath {
 	return YES;
@@ -177,8 +239,6 @@ static NSString * const reuseIdentifier = @"Cell";
     return YES;
 }
 
-/*
-// Uncomment these methods to specify if an action menu should be displayed for the specified item, and react to actions performed on the item
 - (BOOL)collectionView:(UICollectionView *)collectionView shouldShowMenuForItemAtIndexPath:(NSIndexPath *)indexPath {
 	return NO;
 }
@@ -187,8 +247,12 @@ static NSString * const reuseIdentifier = @"Cell";
 - (BOOL)collectionView:(UICollectionView *)collectionView canPerformAction:(SEL)action forItemAtIndexPath:(NSIndexPath *)indexPath withSender:(id)sender {
 	return YES;
 }
+#endif
 
-- (void)collectionView:(UICollectionView *)collectionView performAction:(SEL)action forItemAtIndexPath:(NSIndexPath *)indexPath withSender:(id)sender {
+- (void)collectionView:(UICollectionView *)collectionView
+         performAction:(SEL)action
+    forItemAtIndexPath:(NSIndexPath *)indexPath
+            withSender:(id)sender {
     Sequence *seq = [sequences objectAtIndex:indexPath.row];
     ShowSeqVC *svc = [[ShowSeqVC alloc] initWithSequence:seq];
     svc.view.frame = self.view.frame;

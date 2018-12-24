@@ -489,7 +489,7 @@ long *sequenceArray = 0;
     CGRect f = self.view.frame;
     f.origin.y = self.navigationController.navigationBar.frame.size.height;
     f.size.height -= f.origin.y;
-    scrollView.frame = CGRectInset(f, INDENT, INDENT);
+    scrollView.frame = CGRectInset(f, INSET, INSET);
     
     SET_VIEW_WIDTH(containerView, scrollView.frame.size.width);
     scrollView.contentSize = containerView.frame.size;
