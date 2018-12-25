@@ -43,6 +43,8 @@ static NSString * const reuseIdentifier = @"Cell";
     seqThumbViews = [[NSMutableArray alloc] initWithCapacity:sequences.count];
 
     UICollectionViewFlowLayout *layout= [[UICollectionViewFlowLayout alloc] init];
+    layout.sectionInset = UIEdgeInsetsMake(INSET, INSET, INSET, INSET);
+
     collectionView = [[UICollectionView alloc]
                       initWithFrame:self.view.frame
                       collectionViewLayout:layout];
@@ -137,7 +139,17 @@ static NSString * const reuseIdentifier = @"Cell";
 - (void) addThumbView:(Sequence *) sequence {
     SeqThumbView *thumbView = [[SeqThumbView alloc] initWithSequence:sequence];
     [seqThumbViews addObject:thumbView];
+    UIButton *audioButton = [thumbView viewWithTag:SOUND_VIEW_TAG];
+    if (audioButton) {
+        [audioButton addTarget:self
+                        action:@selector(showAudio:)
+              forControlEvents:UIControlEventTouchUpInside];
+        audioButton.tag = THUMB_INDEX_BIAS + seqThumbViews.count - 1;
+    }
     [collectionView reloadData];
+}
+
+- (IBAction)showAudio:(UIButton *)sender {
 }
 
 - (void) updateThumbAt:(int) index {

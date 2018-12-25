@@ -41,6 +41,7 @@
         earButton.frame = CGRectMake(SEQ_W - INSET - EAR_W,
                                      INSET, EAR_W, EAR_W);
         [earButton.imageView setContentMode: UIViewContentModeScaleAspectFit];
+        earButton.tag = SOUND_VIEW_TAG;
         [self.earButton setImage:ear forState:UIControlStateNormal];
         [self addSubview:earButton];
 
@@ -78,7 +79,7 @@
         self.backgroundColor = [UIColor whiteColor];
         [self addSubview:subTitleLabel];
         
-        descLabel = [[UILabel alloc] initWithFrame:CGRectMake(INSET, BELOW(subTitleLabel.frame),
+        descLabel = [[UILabel alloc] initWithFrame:CGRectMake(INSET, BELOW(subTitleLabel.frame) + SEP,
                                                               self.frame.size.width - 2*INSET, LATER)];
         descLabel.text = sequence.name;
         descLabel.font = [UIFont systemFontOfSize:14];
@@ -97,7 +98,7 @@
         self.layer.borderColor = [UIColor blackColor].CGColor;
         self.layer.borderWidth = 0.5;
         self.backgroundColor = [UIColor whiteColor];
-        SET_VIEW_HEIGHT(self, BELOW(descLabel.frame));
+        SET_VIEW_HEIGHT(self, BELOW(descLabel.frame) + INSET);
 
         [self adjustThumb];
         

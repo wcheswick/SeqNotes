@@ -168,7 +168,6 @@
 }
 
 - (void) fetchValues {
-    NSLog(@"%@ fetch values ...", seq);
     NSString *number = [[seq substringFromIndex:@"A".length] substringToIndex:@"000000".length];
     NSString *plotUrl = [NSString stringWithFormat:@"https://oeis.org/%@/b%@.txt", seq, number];
     NSURL *URL = [NSURL URLWithString:plotUrl];
