@@ -12,6 +12,8 @@
 #import "UICircularProgressView.h"
 #import "Defines.h"
 
+#define SEQ_W   (320)
+
 @interface MainVC ()
 
 @property (nonatomic, strong)   NSMutableArray *sequences;
@@ -23,6 +25,7 @@
 @property (nonatomic, strong)   NSMutableArray *seqThumbViews;
 
 @property (assign)              long dataLoadsRunning;
+@property (assign)              CGFloat thumbWidth;
 
 @end
 
@@ -33,6 +36,7 @@
 @synthesize progressView;
 @synthesize collectionView;
 @synthesize seqThumbViews;
+@synthesize thumbWidth;
 
 static NSString * const reuseIdentifier = @"Cell";
 
@@ -42,11 +46,23 @@ static NSString * const reuseIdentifier = @"Cell";
     self.view = [[UIView alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     seqThumbViews = [[NSMutableArray alloc] initWithCapacity:sequences.count];
 
+    int thumbsAcross = self.view.frame.size.width/384;
+    if (thumbsAcross == 0) {    // doesn't fit, iPhone
+        thumbWidth = self.view.frame.size.width - 2*INSET;
+    } else {
+        thumbWidth = ((self.view.frame.size.width - INSET) / thumbsAcross)
+            - thumbsAcross*INSET;
+    }
+    NSLog(@"thumbs across: %d, thumb width: %.1f",
+          thumbsAcross, thumbWidth);
+    
     UICollectionViewFlowLayout *layout= [[UICollectionViewFlowLayout alloc] init];
-    layout.sectionInset = UIEdgeInsetsMake(INSET, INSET, INSET, INSET);
-
+    layout.sectionInset = UIEdgeInsetsMake(5, 5, 5, 5);
+    layout.minimumLineSpacing = 5;
+    layout.minimumInteritemSpacing = 5;
+    
     collectionView = [[UICollectionView alloc]
-                      initWithFrame:self.view.frame
+                      initWithFrame:CGRectInset(self.view.frame, INSET, INSET)
                       collectionViewLayout:layout];
     [collectionView setDataSource:self];
     [collectionView setDelegate:self];
@@ -54,6 +70,7 @@ static NSString * const reuseIdentifier = @"Cell";
     [self.collectionView registerClass:[UICollectionViewCell class]
             forCellWithReuseIdentifier:reuseIdentifier];
     [collectionView setBackgroundColor:[UIColor whiteColor]];
+    self.view.backgroundColor = [UIColor whiteColor];
     [self.view addSubview:collectionView];
     
     // Register cell classes
@@ -139,7 +156,9 @@ static NSString * const reuseIdentifier = @"Cell";
 }
 
 - (void) addThumbView:(Sequence *) sequence {
-    SeqThumbView *thumbView = [[SeqThumbView alloc] initWithSequence:sequence];
+    SeqThumbView *thumbView = [[SeqThumbView alloc]
+                               initWithSequence:sequence
+                               width:thumbWidth];
     [seqThumbViews addObject:thumbView];
     UIButton *audioButton = [thumbView viewWithTag:SOUND_VIEW_TAG];
     if (audioButton) {
@@ -152,7 +171,6 @@ static NSString * const reuseIdentifier = @"Cell";
 }
 
 - (IBAction)showAudio:(UIButton *)sender {
-    UIButton *but = (UIButton *)sender;
 //    UIView *tv = [but superview];
     
     if (sender.tag < THUMB_INDEX_BIAS) {
@@ -260,7 +278,9 @@ static NSString * const reuseIdentifier = @"Cell";
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView
                   cellForItemAtIndexPath:(NSIndexPath *)indexPath {
-    UICollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:reuseIdentifier forIndexPath:indexPath];
+    UICollectionViewCell *cell = [collectionView
+                                  dequeueReusableCellWithReuseIdentifier:reuseIdentifier
+                                  forIndexPath:indexPath];
     SeqThumbView *thumbView = [seqThumbViews objectAtIndex:indexPath.row];
     [cell addSubview:thumbView];
     return cell;
@@ -271,6 +291,12 @@ static NSString * const reuseIdentifier = @"Cell";
   sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
     SeqThumbView *thumbView = [seqThumbViews objectAtIndex:indexPath.row];
     return thumbView.frame.size;
+}
+
+- (UIEdgeInsets)collectionView:(UICollectionView *)collectionView
+                        layout:(UICollectionViewLayout*)collectionViewLayout
+        insetForSectionAtIndex:(NSInteger)section {
+    return UIEdgeInsetsMake(0, 0, 0, 0);
 }
 
 #pragma mark <UICollectionViewDelegate>

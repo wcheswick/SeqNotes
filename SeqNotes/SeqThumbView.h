@@ -9,7 +9,6 @@
 #import <UIKit/UIKit.h>
 #import "Sequence.h"
 
-#define SEQ_W   (320)
 #define EAR_W   30
 
 #define PLOT_VIEW_TAB   1000
@@ -24,7 +23,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong)   Sequence *sequence;
 
-- (id)initWithSequence: (Sequence *)s;
+- (id)initWithSequence: (Sequence *)s
+                 width:(CGFloat)w;
 - (void) adjustThumb;
 
 @end

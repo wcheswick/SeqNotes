@@ -28,24 +28,25 @@
 @synthesize busyDownloadingView;
 @synthesize descLabel;
 
-- (id)initWithSequence: (Sequence *)s {
+- (id)initWithSequence: (Sequence *)s width:(CGFloat)w {
     self = [super init];
     if (self) {
         sequence = s;
-        self.frame = CGRectMake(0, 0, SEQ_W, LATER);
+        self.frame = CGRectMake(0, 0, w, LATER);
         
         earButton = [UIButton buttonWithType:UIButtonTypeCustom];
         UIImage *ear = [UIImage imageWithContentsOfFile:[[NSBundle mainBundle]
                                                          pathForResource:@"ear"
                                                          ofType:@"jpg"]];
-        earButton.frame = CGRectMake(SEQ_W - INSET - EAR_W,
+        earButton.frame = CGRectMake(w - INSET - EAR_W,
                                      INSET, EAR_W, EAR_W);
         [earButton.imageView setContentMode: UIViewContentModeScaleAspectFit];
         earButton.tag = SOUND_VIEW_TAG;
         [self.earButton setImage:ear forState:UIControlStateNormal];
         [self addSubview:earButton];
         
-        busyDownloadingView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+        busyDownloadingView = [[UIActivityIndicatorView alloc]
+                               initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
         busyDownloadingView.frame = earButton.frame;
         busyDownloadingView.hidesWhenStopped = YES;
         busyDownloadingView.opaque = YES;
