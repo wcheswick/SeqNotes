@@ -112,8 +112,6 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    NSLog(@"svc vdl: %@", NSStringFromCGRect(self.view.frame));
-
     self.navigationController.navigationBar.hidden = NO;
     self.navigationController.navigationBar.opaque = YES;
     self.title = sequence.seq;
@@ -126,7 +124,7 @@
     self.navigationItem.leftBarButtonItem = leftBarButton;
 
     containerView = [[UIView alloc] init];
-    containerView.frame = CGRectMake(0, self.navigationController.navigationBar.frame.size.height, 310, LATER);
+    containerView.frame = CGRectMake(INSET, self.navigationController.navigationBar.frame.size.height, 310, LATER);
     
     UIView *soundControlView = [[UIView alloc] init];
     soundControlView.frame = CGRectMake(0, 0, containerView.frame.size.width, LATER);
@@ -166,17 +164,15 @@
     [musicSlider setThumbImage:scaledImage forState:UIControlStateNormal];
     [soundControlView addSubview:musicSlider];
     
-#define INST_H  250
+#define INST_H  300
     instrumentPicker = [[UIPickerView alloc] init];
     instrumentPicker.frame = CGRectMake(0, BELOW(musicSlider.frame),
                                         RIGHT(musicSlider.frame), INST_H);
     instrumentPicker.delegate = self;
     [instrumentPicker selectRow:playOptions.instrumentIndex inComponent:0 animated:NO];
-#ifdef notdef
     instrumentPicker.layer.borderWidth = 0.5;
     instrumentPicker.layer.borderColor = [UIColor lightGrayColor].CGColor;
     instrumentPicker.layer.cornerRadius = 5.0;
-#endif
     [soundControlView addSubview:instrumentPicker];
     
     rateSlider = [[UISlider alloc] init];

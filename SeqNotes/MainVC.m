@@ -12,7 +12,7 @@
 #import "UICircularProgressView.h"
 #import "Defines.h"
 
-#define SEQ_W   (320)
+#define NICE_W  384
 
 @interface MainVC ()
 
@@ -48,7 +48,7 @@ static NSString * const reuseIdentifier = @"Cell";
     self.view = [[UIView alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     seqThumbViews = [[NSMutableArray alloc] initWithCapacity:sequences.count];
 
-    int thumbsAcross = self.view.frame.size.width/384;
+    int thumbsAcross = self.view.frame.size.width/NICE_W;
     if (thumbsAcross == 0) {    // doesn't fit, iPhone
         thumbWidth = self.view.frame.size.width - 2*INSET;
     } else {
@@ -191,19 +191,21 @@ static NSString * const reuseIdentifier = @"Cell";
     assert(sequence);
     NSLog(@"sequence selected: #%zu, %@", index, sequence.seq);
     
-    SeqThumbView *stv = [seqThumbViews objectAtIndex:index];
-    UIView *thumbView = [stv superview];
     ShowSeqVC *svc = [[ShowSeqVC alloc] initWithSequence:sequence];
     svc.modalPresentationStyle = UIModalPresentationPopover;
     
     UINavigationController *nav = [[UINavigationController alloc]
                                    initWithRootViewController:svc];
     nav.modalPresentationStyle = UIModalPresentationPopover;
+    
+    SeqThumbView *stv = [seqThumbViews objectAtIndex:index];
+    UIView *thumbView = [stv superview];
     nav.popoverPresentationController.sourceView = thumbView;
     nav.popoverPresentationController.sourceRect = thumbView.bounds;
     CGRect f = svc.view.frame;
     f.origin.y = nav.navigationBar.frame.size.height;
     f.size.height += f.origin.y;
+    f.size.width = MIN(self.view.frame.size.width, NICE_W) - 2*INSET;
     svc.view.frame = f;
     nav.preferredContentSize = svc.view.frame.size;
     [self presentViewController:nav animated:YES completion:nil];
