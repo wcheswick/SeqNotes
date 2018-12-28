@@ -15,7 +15,8 @@ NS_ASSUME_NONNULL_BEGIN
     <sequenceProtocol,
     UICollectionViewDelegate,
     UICollectionViewDataSource,
-    UICollectionViewDelegateFlowLayout>
+    UICollectionViewDelegateFlowLayout,
+    UIPopoverPresentationControllerDelegate>
 @end
 
 NS_ASSUME_NONNULL_END

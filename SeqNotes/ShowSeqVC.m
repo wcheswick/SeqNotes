@@ -19,7 +19,6 @@
 @interface ShowSeqVC ()
 
 @property (nonatomic, strong)   Sequence *sequence;
-
 @property (nonatomic, strong)   UIView *containerView;
 @property (nonatomic, strong)   UIScrollView *scrollView;
 @property (nonatomic, strong)   UISlider *musicSlider;
@@ -51,7 +50,7 @@
 @synthesize rateSlider;
 @synthesize oldMIDI, currentMIDI;
 
-- (id)initWithSequence: (Sequence *)s {
+- (id)initWithSequence:(Sequence *)s {
     self = [super init];
     if (self) {
         sequence = s;
@@ -86,7 +85,6 @@
         return;
     }
     instrumentList = [[NSMutableArray alloc] init];
-    
 
     // Entries look like this:
     //    # from echo "inst 1" | fluidsynth "GeneralUser GS MuseScore v1.442.sf2"
@@ -114,6 +112,8 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
+    NSLog(@"svc vdl: %@", NSStringFromCGRect(self.view.frame));
+
     self.navigationController.navigationBar.hidden = NO;
     self.navigationController.navigationBar.opaque = YES;
     self.title = sequence.seq;
@@ -124,31 +124,13 @@
                                       initWithBarButtonSystemItem:UIBarButtonSystemItemDone
                                       target:self action:@selector(doDone:)];
     self.navigationItem.leftBarButtonItem = leftBarButton;
-    
+
     containerView = [[UIView alloc] init];
-    containerView.frame = CGRectMake(0, 0, LATER, LATER);
-
-    UILabel *titleView = [[UILabel alloc] init];
-    titleView.text = [sequence titleToUse];
-    titleView.font = [UIFont systemFontOfSize:LARGE_FONT_SIZE];
-    titleView.numberOfLines = 0;
-    titleView.lineBreakMode = NSLineBreakByWordWrapping;
-    titleView.frame = CGRectMake(0, 0, self.view.frame.size.width, 3*LARGE_H);
-    [containerView addSubview:titleView];
-
-    UILabel *descriptionView = [[UILabel alloc] init];
-    descriptionView.text = [sequence subtitleToUse];
-    descriptionView.lineBreakMode = NSLineBreakByWordWrapping;
-    descriptionView.font = [UIFont systemFontOfSize:LABEL_FONT_SIZE];
-    descriptionView.numberOfLines = 0;
-    descriptionView.lineBreakMode = NSLineBreakByWordWrapping;
-    descriptionView.frame = CGRectMake(0, BELOW(titleView.frame) + SEP,
-                                       self.view.frame.size.width, 4*LABEL_H);
-    [containerView addSubview:descriptionView];
+    containerView.frame = CGRectMake(0, self.navigationController.navigationBar.frame.size.height, 310, LATER);
     
     UIView *soundControlView = [[UIView alloc] init];
-    soundControlView.frame = CGRectMake(0, BELOW(descriptionView.frame) + SEP,
-                                        self.view.frame.size.width, LATER);
+    soundControlView.frame = CGRectMake(0, 0, containerView.frame.size.width, LATER);
+    soundControlView.userInteractionEnabled = YES;
     
     play = [UIButton buttonWithType:UIButtonTypeRoundedRect];
     CGRect f;
@@ -162,7 +144,7 @@
     play.titleLabel.font = [UIFont boldSystemFontOfSize:f.size.height - 8];
     [play addTarget:self
              action:@selector(doPlay:)
-    forControlEvents:UIControlEventTouchUpInside];
+   forControlEvents:UIControlEventTouchUpInside];
     [soundControlView addSubview:play];
     
     musicSlider = [[UISlider alloc] init];
@@ -176,17 +158,18 @@
     musicSlider.maximumValue = 1.0;
     [musicSlider addTarget:self action:@selector(doChangePosition:) forControlEvents:UIControlEventValueChanged];
     UIImage *smallNote = [UIImage imageWithContentsOfFile:[[NSBundle mainBundle]
-                                          pathForResource:@"smallnote"
-                                                   ofType:@"png"]];
+                                                           pathForResource:@"smallnote"
+                                                           ofType:@"png"]];
     UIImage *scaledImage = [UIImage imageWithCGImage:smallNote.CGImage
-                        scale:10 //(smallNote.scale * f.size.height/smallNote.size.height)
-                  orientation:(smallNote.imageOrientation)];
+                                               scale:10 //(smallNote.scale * f.size.height/smallNote.size.height)
+                                         orientation:(smallNote.imageOrientation)];
     [musicSlider setThumbImage:scaledImage forState:UIControlStateNormal];
     [soundControlView addSubview:musicSlider];
-
+    
+#define INST_H  250
     instrumentPicker = [[UIPickerView alloc] init];
     instrumentPicker.frame = CGRectMake(0, BELOW(musicSlider.frame),
-                                        RIGHT(musicSlider.frame), 100);
+                                        RIGHT(musicSlider.frame), INST_H);
     instrumentPicker.delegate = self;
     [instrumentPicker selectRow:playOptions.instrumentIndex inComponent:0 animated:NO];
 #ifdef notdef
@@ -206,10 +189,12 @@
     rateSlider.value = playOptions.beatsPerMinute;
     [rateSlider addTarget:self action:@selector(doChangeRate:) forControlEvents:UIControlEventValueChanged];
     [soundControlView addSubview:rateSlider];
-
     SET_VIEW_HEIGHT(soundControlView, BELOW(rateSlider.frame));
     [containerView addSubview:soundControlView];
     
+    SET_VIEW_HEIGHT(containerView, BELOW(soundControlView.frame));
+    
+#ifdef notdef
     if (sequence.plotData) {
         UIImage *plotImage = [UIImage imageWithData:sequence.plotData];
         UIImageView *plotsView = [[UIImageView alloc] initWithImage:plotImage];
@@ -222,7 +207,7 @@
     } else {
         SET_VIEW_HEIGHT(containerView, BELOW(soundControlView.frame));
     }
-
+    
     scrollView = [[UIScrollView alloc] init];
     scrollView.pagingEnabled = NO;
     scrollView.autoresizingMask = UIViewAutoresizingFlexibleHeight;
@@ -233,14 +218,37 @@
     scrollView.delaysContentTouches = YES;
     scrollView.canCancelContentTouches = YES;
     [scrollView addSubview:containerView];
-
+    
     SET_VIEW_WIDTH(containerView, scrollView.frame.size.width);
     scrollView.contentSize = containerView.frame.size;
-
-    self.view.backgroundColor = [UIColor whiteColor];
+    
     [self.view addSubview:scrollView];
+#endif
+    [self.view addSubview:containerView];
+    
+    SET_VIEW_HEIGHT(self.view, containerView.frame.size.height);
+    self.view.backgroundColor = [UIColor whiteColor];
+    NSLog(@"ff vdl: %@", NSStringFromCGRect(self.view.frame));
 }
 
+- (void) viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    
+    NSLog(@"svc vwa: %@", NSStringFromCGRect(self.view.frame));
+
+    CGRect f = self.view.frame;
+    f.origin.y = self.navigationController.navigationBar.frame.size.height;
+    f.size.height -= f.origin.y;
+    self.view.frame = f;
+    NSLog(@"svc vwa: %@", NSStringFromCGRect(self.view.frame));
+#ifdef notdef
+    scrollView.frame = CGRectInset(f, INSET, INSET);
+    
+    SET_VIEW_WIDTH(containerView, scrollView.frame.size.width);
+    scrollView.contentSize = containerView.frame.size;
+#endif
+    
+}
 
 - (NSInteger)numberOfComponentsInPickerView:(UIPickerView *)pickerView {
     return 1;
@@ -476,23 +484,11 @@ long *sequenceArray = 0;
 
 - (IBAction)doDone:(UISwipeGestureRecognizer *)sender {
     [self stopPlayer];
-    [self.navigationController popViewControllerAnimated:YES];
+    [self dismissViewControllerAnimated:YES completion:NULL];
 }
 
 - (IBAction)swipeLeft:(UISwipeGestureRecognizer *)sender {
     [self.navigationController popViewControllerAnimated:YES];
-}
-
-- (void) viewWillAppear:(BOOL)animated {
-    [super viewWillAppear:animated];
-    
-    CGRect f = self.view.frame;
-    f.origin.y = self.navigationController.navigationBar.frame.size.height;
-    f.size.height -= f.origin.y;
-    scrollView.frame = CGRectInset(f, INSET, INSET);
-    
-    SET_VIEW_WIDTH(containerView, scrollView.frame.size.width);
-    scrollView.contentSize = containerView.frame.size;
 }
 
 - (void) mail:(NSString *) filePath {

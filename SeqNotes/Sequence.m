@@ -200,6 +200,7 @@
             if (values.count >= MAX_VALUES)
                 break;
         }
+        valuesUnavailable = NO;
     }
     dispatch_async(dispatch_get_main_queue(), ^(void){
         [self->target valuesFetchedForSequence:self];

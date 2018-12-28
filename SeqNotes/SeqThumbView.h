@@ -12,9 +12,9 @@
 #define SEQ_W   (320)
 #define EAR_W   30
 
-#define SOUND_VIEW_TAG  1000
-#define THUMB_INDEX_BIAS  2000
-#define PLOT_VIEW_TAB   3000
+#define PLOT_VIEW_TAB   1000
+#define SOUND_VIEW_TAG  2000
+#define THUMB_INDEX_BIAS  3000
 
 NS_ASSUME_NONNULL_BEGIN
 

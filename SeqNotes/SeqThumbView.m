@@ -44,7 +44,7 @@
         earButton.tag = SOUND_VIEW_TAG;
         [self.earButton setImage:ear forState:UIControlStateNormal];
         [self addSubview:earButton];
-
+        
         busyDownloadingView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
         busyDownloadingView.frame = earButton.frame;
         busyDownloadingView.hidesWhenStopped = YES;

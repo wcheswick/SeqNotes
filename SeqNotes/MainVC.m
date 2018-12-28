@@ -120,16 +120,18 @@ static NSString * const reuseIdentifier = @"Cell";
         });
         break;  // only do one
     }
+    if (dataLoadsRunning == 0)
+        [self save];    // save our results
 }
 
 - (void) valuesFetchedForSequence:(Sequence *)sequence {
     dataLoadsRunning--;
-    [self checkDataNeeded];
+    [self checkDataNeeded]; // start next load, if needed
     for (int i=0; i<seqThumbViews.count; i++) {
         SeqThumbView *stv = [seqThumbViews objectAtIndex:i];
-        Sequence *seq = stv.sequence;
-        if ([seq.seq isEqualToString:sequence.seq]) {   // found our slot
-            seq.target = self;
+        Sequence *s = stv.sequence;
+        if ([s.seq isEqualToString:sequence.seq]) {   // found our slot
+            s.target = self;
             [stv adjustThumb];
             return;
         }
@@ -150,6 +152,38 @@ static NSString * const reuseIdentifier = @"Cell";
 }
 
 - (IBAction)showAudio:(UIButton *)sender {
+    UIButton *but = (UIButton *)sender;
+//    UIView *tv = [but superview];
+    
+    if (sender.tag < THUMB_INDEX_BIAS) {
+        NSLog(@"button touch, not audio");
+        return;
+    }
+    size_t index = sender.tag - THUMB_INDEX_BIAS;
+    if (index >= sequences.count) {
+        NSLog(@"button touch, index out of range: %ld", (long)sender.tag);
+        return;
+    }
+    Sequence *sequence = [sequences objectAtIndex:index];
+    assert(sequence);
+    NSLog(@"sequence selected: #%zu, %@", index, sequence.seq);
+    
+    SeqThumbView *stv = [seqThumbViews objectAtIndex:index];
+    UIView *thumbView = [stv superview];
+    ShowSeqVC *svc = [[ShowSeqVC alloc] initWithSequence:sequence];
+    svc.modalPresentationStyle = UIModalPresentationPopover;
+    
+    UINavigationController *nav = [[UINavigationController alloc]
+                                   initWithRootViewController:svc];
+    nav.modalPresentationStyle = UIModalPresentationPopover;
+    nav.popoverPresentationController.sourceView = thumbView;
+    nav.popoverPresentationController.sourceRect = thumbView.bounds;
+    CGRect f = svc.view.frame;
+    f.origin.y = nav.navigationBar.frame.size.height;
+    f.size.height += f.origin.y;
+    svc.view.frame = f;
+    nav.preferredContentSize = svc.view.frame.size;
+    [self presentViewController:nav animated:YES completion:nil];
 }
 
 - (void) updateThumbAt:(int) index {
@@ -191,6 +225,7 @@ static NSString * const reuseIdentifier = @"Cell";
 
 - (void) addSequence: (Sequence *)sequence {
     [sequences addObject:sequence];
+    [self save];
     [self addThumbView:sequence];
     [self loadNextNewSequence];
     [self checkDataNeeded];
@@ -265,10 +300,12 @@ static NSString * const reuseIdentifier = @"Cell";
          performAction:(SEL)action
     forItemAtIndexPath:(NSIndexPath *)indexPath
             withSender:(id)sender {
+#ifdef notused
     Sequence *seq = [sequences objectAtIndex:indexPath.row];
     ShowSeqVC *svc = [[ShowSeqVC alloc] initWithSequence:seq];
     svc.view.frame = self.view.frame;
     [self.navigationController pushViewController:svc animated:YES];
+#endif
 }
 
 - (NSMutableArray *) initializeSequences {
