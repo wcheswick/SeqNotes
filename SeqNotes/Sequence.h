@@ -38,7 +38,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (id)initSequence: (NSString *)seq;
 - (void) loadBasicDataFromOEIS:(id<sequenceProtocol>)caller;
-- (void) fetchValues;
+- (NSString *) fetchValues;
 - (NSString *) titleToUse;
 - (NSString *) subtitleToUse;
 - (void) dump;

@@ -40,6 +40,8 @@
 
 static NSString * const reuseIdentifier = @"Cell";
 
+#define MIN_THUMB_WIDTH 310
+
 - (void)viewDidLoad {
     [super viewDidLoad];
 
@@ -50,6 +52,9 @@ static NSString * const reuseIdentifier = @"Cell";
     if (thumbsAcross == 0) {    // doesn't fit, iPhone
         thumbWidth = self.view.frame.size.width - 2*INSET;
     } else {
+        int smallerThumbsAcross = self.view.frame.size.width/MIN_THUMB_WIDTH;
+        if (smallerThumbsAcross > thumbsAcross)
+            thumbsAcross = smallerThumbsAcross;
         thumbWidth = ((self.view.frame.size.width - INSET) / thumbsAcross)
             - thumbsAcross*INSET;
     }
@@ -133,7 +138,7 @@ static NSString * const reuseIdentifier = @"Cell";
         dispatch_queue_t aQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
         dispatch_async(aQueue, ^{
             seq.target = self;
-            [seq fetchValues];
+            [seq fetchValues];  // XXXX error return ignored
         });
         break;  // only do one
     }
@@ -216,6 +221,9 @@ static NSString * const reuseIdentifier = @"Cell";
 - (void) showSequences {
     for (int i=0; i<sequences.count; i++) {
         Sequence *s = [sequences objectAtIndex:i];
+        if (s.valuesUnavailable) {
+            s.valuesUnavailable = NO;   // crappy error processing, for the moment XXXX
+        }
         [self addThumbView:s];
         [self updateThumbAt:i];
     }

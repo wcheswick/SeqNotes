@@ -82,14 +82,6 @@
 - (void) loadBasicDataFromOEIS:(id<sequenceProtocol>)caller {
     target = caller;
     [self fetchFromOEIS];
-#ifdef later
-    NSLog(@"    fetch plots ...");
-    [self fetchPlots];
-    NSLog(@"    ... plot size is %lu; fetch values ...", (unsigned long)plotData.length);
-    [self fetchValues];
-    NSLog(@"    ... number of values: %lu; fetch MIDI ...",  (unsigned long)values.count);
-    [self fetchMIDI];   // calls downloadComplete when finished
-#endif
     [self downloadComplete];
 }
 
@@ -167,7 +159,7 @@
     }
 }
 
-- (void) fetchValues {
+- (NSString *) fetchValues {
     NSString *number = [[seq substringFromIndex:@"A".length] substringToIndex:@"000000".length];
     NSString *plotUrl = [NSString stringWithFormat:@"https://oeis.org/%@/b%@.txt", seq, number];
     NSURL *URL = [NSURL URLWithString:plotUrl];
@@ -176,9 +168,8 @@
                                                   encoding:NSUTF8StringEncoding
                                                      error:&error];
     if (!contents) {
-        NSLog(@"OEIS values load failed for %@: %@", seq, [error localizedDescription]);
-        valuesUnavailable = YES;
-        return;
+        valuesUnavailable = YES;    // XXX network might be down, this is too permanent
+        return [NSString stringWithFormat:@"OEIS fetch failed: %@", [error localizedDescription]];
     } else {
         NSArray *lines = [contents componentsSeparatedByString:@"\n"];
         
@@ -205,6 +196,7 @@
     dispatch_async(dispatch_get_main_queue(), ^(void){
         [self->target valuesFetchedForSequence:self];
     });
+    return nil;
 }
 
 - (void) fetchMIDI {
