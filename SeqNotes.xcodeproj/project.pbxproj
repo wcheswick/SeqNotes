@@ -51,8 +51,6 @@
 		FB99421721C58B88009A30E4 /* Defines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Defines.h; sourceTree = "<group>"; };
 		FB99421921C58B89009A30E4 /* BrowseOEISVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BrowseOEISVC.h; sourceTree = "<group>"; };
 		FB99421A21C58B89009A30E4 /* BrowseOEISVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BrowseOEISVC.m; sourceTree = "<group>"; };
-		FB99421E21C58B93009A30E4 /* MenuVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MenuVC.h; sourceTree = "<group>"; };
-		FB99421F21C58B93009A30E4 /* MenuVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MenuVC.m; sourceTree = "<group>"; };
 		FB99422021C58B93009A30E4 /* Neil notes */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "Neil notes"; sourceTree = "<group>"; };
 		FB99422421C58B9E009A30E4 /* Sequence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Sequence.h; sourceTree = "<group>"; };
 		FB99422521C58B9E009A30E4 /* ShowSeqVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ShowSeqVC.m; sourceTree = "<group>"; };
@@ -143,8 +141,6 @@
 				FB99421721C58B88009A30E4 /* Defines.h */,
 				FB99421321C58B74009A30E4 /* AppDelegate.h */,
 				FB99421221C58B74009A30E4 /* AppDelegate.m */,
-				FB99421E21C58B93009A30E4 /* MenuVC.h */,
-				FB99421F21C58B93009A30E4 /* MenuVC.m */,
 				FBEBED4221CD864400D41433 /* MainVC.h */,
 				FBEBED4321CD864400D41433 /* MainVC.m */,
 				FBDC07A321CD8CA000A7F0FF /* SeqThumbView.h */,

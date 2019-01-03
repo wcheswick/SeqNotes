@@ -26,6 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (id)initWithSequence: (Sequence *)s
                  width:(CGFloat)w;
 - (void) adjustThumb;
+- (void) applyNewThumbWidth:(CGFloat) w;
 
 @end
 

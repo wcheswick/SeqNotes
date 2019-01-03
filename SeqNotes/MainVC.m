@@ -40,26 +40,16 @@
 
 static NSString * const reuseIdentifier = @"Cell";
 
-#define MIN_THUMB_WIDTH 310
+#define MIN_THUMB_WIDTH 260 /*310*/
 
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    self.view = [[UIView alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+    self.view = [[UIView alloc]
+                 initWithFrame:[[UIScreen mainScreen] bounds]];
     seqThumbViews = [[NSMutableArray alloc] initWithCapacity:sequences.count];
 
-    int thumbsAcross = self.view.frame.size.width/NICE_W;
-    if (thumbsAcross == 0) {    // doesn't fit, iPhone
-        thumbWidth = self.view.frame.size.width - 2*INSET;
-    } else {
-        int smallerThumbsAcross = self.view.frame.size.width/MIN_THUMB_WIDTH;
-        if (smallerThumbsAcross > thumbsAcross)
-            thumbsAcross = smallerThumbsAcross;
-        thumbWidth = ((self.view.frame.size.width - INSET) / thumbsAcross)
-            - thumbsAcross*INSET;
-    }
-    NSLog(@"thumbs across: %d, thumb width: %.1f",
-          thumbsAcross, thumbWidth);
+    [self computeThumbWidth];
     
     UICollectionViewFlowLayout *layout= [[UICollectionViewFlowLayout alloc] init];
     layout.sectionInset = UIEdgeInsetsMake(5, 5, 5, 5);
@@ -122,6 +112,37 @@ static NSString * const reuseIdentifier = @"Cell";
     }
     dataLoadsRunning = 0;
     [self checkDataNeeded];
+    [collectionView reloadData];
+}
+
+- (void) computeThumbWidth {
+    int thumbsAcross = self.view.frame.size.width/NICE_W;
+    if (thumbsAcross == 0) {    // doesn't fit, iPhone
+        thumbsAcross = 1;
+        thumbWidth = self.view.frame.size.width - 2*INSET;
+    } else {
+        int smallerThumbsAcross = self.view.frame.size.width/MIN_THUMB_WIDTH;
+        if (smallerThumbsAcross > thumbsAcross)
+            thumbsAcross = smallerThumbsAcross;
+        thumbWidth = ((self.view.frame.size.width - INSET) / thumbsAcross)
+        - thumbsAcross*INSET;
+    }
+    NSLog(@"thumbs across: %d, thumb width: %.1f",
+          thumbsAcross, thumbWidth);
+}
+
+- (void) viewWillLayoutSubviews {
+    [super viewWillLayoutSubviews];
+    NSLog(@"viewWillLayoutSubviews");
+    
+    NSLog(@"  frame: %.0f, %.0f",
+          self.view.frame.size.width,
+          self.view.frame.size.height);
+    
+    [self computeThumbWidth];
+    for (SeqThumbView *thumbView in seqThumbViews) {
+        [thumbView applyNewThumbWidth:thumbWidth];
+    }
     [collectionView reloadData];
 }
 
@@ -211,15 +232,6 @@ static NSString * const reuseIdentifier = @"Cell";
     [self presentViewController:nav animated:YES completion:nil];
 }
 
-- (void) updateThumbAt:(int) index {
-    [self.collectionView reloadData];
-#ifdef broken
-    [self.collectionView reloadItemsAtIndexPaths:@[[NSIndexPath
-                                                    indexPathForRow:index
-                                                    inSection:0]]];
-#endif
-}
-
 - (void) showSequences {
     for (int i=0; i<sequences.count; i++) {
         Sequence *s = [sequences objectAtIndex:i];
@@ -227,8 +239,8 @@ static NSString * const reuseIdentifier = @"Cell";
             s.valuesUnavailable = NO;   // crappy error processing, for the moment XXXX
         }
         [self addThumbView:s];
-        [self updateThumbAt:i];
     }
+    [self.collectionView reloadData];
 }
 
 - (void) loadNextNewSequence {

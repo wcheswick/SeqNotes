@@ -32,14 +32,12 @@
     self = [super init];
     if (self) {
         sequence = s;
-        self.frame = CGRectMake(0, 0, w, LATER);
-        
+
         earButton = [UIButton buttonWithType:UIButtonTypeCustom];
         UIImage *ear = [UIImage imageWithContentsOfFile:[[NSBundle mainBundle]
                                                          pathForResource:@"ear"
                                                          ofType:@"jpg"]];
-        earButton.frame = CGRectMake(w - INSET - EAR_W,
-                                     INSET, EAR_W, EAR_W);
+        earButton.frame = CGRectMake(LATER, INSET, EAR_W, EAR_W);
         [earButton.imageView setContentMode: UIViewContentModeScaleAspectFit];
         earButton.tag = SOUND_VIEW_TAG;
         [self.earButton setImage:ear forState:UIControlStateNormal];
@@ -54,7 +52,7 @@
         [self addSubview:busyDownloadingView];
         
         titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(INSET, INSET,
-                                                              earButton.frame.origin.x - SEP,
+                                                              LATER,
                                                               LABEL_H)];
         titleLabel.text = sequence.seq;
         titleLabel.font = [UIFont boldSystemFontOfSize:LABEL_FONT_SIZE];
@@ -69,42 +67,53 @@
         subTitleLabel.font = [UIFont systemFontOfSize:LABEL_FONT_SIZE];
         subTitleLabel.lineBreakMode = NSLineBreakByWordWrapping;
         subTitleLabel.numberOfLines = 0;
-        CGRect f = [subTitleLabel.text boundingRectWithSize:CGSizeMake(subTitleLabel.frame.size.width, CGFLOAT_MAX)
-                                                 options:NSStringDrawingUsesLineFragmentOrigin
-                                              attributes:@{NSFontAttributeName: subTitleLabel.font}
-                                                 context:nil];
-        f.size.width = ceil(f.size.width);
-        f.size.height = ceil(f.size.height);
-        f.origin = subTitleLabel.frame.origin;
-        subTitleLabel.frame = f;
         self.backgroundColor = [UIColor whiteColor];
         [self addSubview:subTitleLabel];
         
         descLabel = [[UILabel alloc] initWithFrame:CGRectMake(INSET, BELOW(subTitleLabel.frame) + SEP,
-                                                              self.frame.size.width - 2*INSET, LATER)];
+                                                              LATER, LATER)];
         descLabel.text = sequence.name;
         descLabel.font = [UIFont systemFontOfSize:14];
         descLabel.lineBreakMode = NSLineBreakByWordWrapping;
         descLabel.numberOfLines = 0;
-        f = [descLabel.text boundingRectWithSize:CGSizeMake(descLabel.frame.size.width, CGFLOAT_MAX)
-                                             options:NSStringDrawingUsesLineFragmentOrigin
-                                          attributes:@{NSFontAttributeName: descLabel.font}
-                                             context:nil];
-        f.size.width = ceil(f.size.width);
-        f.size.height = ceil(f.size.height);
-        f.origin = descLabel.frame.origin;
-        descLabel.frame = f;
         [self addSubview:descLabel];
         
         self.layer.borderColor = [UIColor blackColor].CGColor;
         self.layer.borderWidth = 0.5;
         self.backgroundColor = [UIColor whiteColor];
-        SET_VIEW_HEIGHT(self, BELOW(descLabel.frame) + INSET);
 
         [self adjustThumb];
-        
+        [self applyNewThumbWidth: w];
     }
     return self;
+}
+
+- (void) applyNewThumbWidth:(CGFloat) w {
+    
+    self.frame = CGRectMake(0, 0, w, LATER);
+    SET_VIEW_X(earButton, w - INSET - EAR_W);
+    SET_VIEW_WIDTH(titleLabel, earButton.frame.origin.x - SEP);
+    
+    CGRect f = [subTitleLabel.text boundingRectWithSize:CGSizeMake(titleLabel.frame.size.width, CGFLOAT_MAX)
+                                                options:NSStringDrawingUsesLineFragmentOrigin
+                                             attributes:@{NSFontAttributeName: subTitleLabel.font}
+                                                context:nil];
+    f.size.width = ceil(f.size.width);
+    f.size.height = ceil(f.size.height);
+    f.origin = subTitleLabel.frame.origin;
+    subTitleLabel.frame = f;
+
+    SET_VIEW_WIDTH(descLabel, self.frame.size.width - 2*INSET);
+    
+    f = [descLabel.text boundingRectWithSize:CGSizeMake(descLabel.frame.size.width, CGFLOAT_MAX)
+                                     options:NSStringDrawingUsesLineFragmentOrigin
+                                  attributes:@{NSFontAttributeName: descLabel.font}
+                                     context:nil];
+    f.size.width = ceil(f.size.width);
+    f.size.height = ceil(f.size.height);
+    f.origin = descLabel.frame.origin;
+    descLabel.frame = f;
+    SET_VIEW_HEIGHT(self, BELOW(descLabel.frame) + INSET);
 }
 
 - (void) adjustThumb {
