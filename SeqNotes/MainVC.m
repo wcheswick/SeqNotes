@@ -21,6 +21,7 @@
 @property (nonatomic, strong)   UICircularProgressView *progressView;
 @property (nonatomic, strong)   NSString *currentSequence;
 @property (nonatomic, strong)   UICollectionView *collectionView;
+@property (nonatomic, strong)   UICollectionViewFlowLayout *layout;
 
 @property (nonatomic, strong)   NSMutableArray *seqThumbViews;
 
@@ -34,7 +35,7 @@
 @synthesize sequences, currentSequence, incomingSequences;
 @synthesize dataLoadsRunning;
 @synthesize progressView;
-@synthesize collectionView;
+@synthesize collectionView, layout;
 @synthesize seqThumbViews;
 @synthesize thumbWidth;
 
@@ -51,8 +52,8 @@ static NSString * const reuseIdentifier = @"Cell";
 
     [self computeThumbWidth];
     
-    UICollectionViewFlowLayout *layout= [[UICollectionViewFlowLayout alloc] init];
-    layout.sectionInset = UIEdgeInsetsMake(5, 5, 5, 5);
+    layout = [[UICollectionViewFlowLayout alloc] init];
+    layout.sectionInset = UIEdgeInsetsMake(INSET, INSET, INSET, INSET);
     layout.minimumLineSpacing = 5;
     layout.minimumInteritemSpacing = 5;
     
@@ -121,14 +122,16 @@ static NSString * const reuseIdentifier = @"Cell";
         thumbsAcross = 1;
         thumbWidth = self.view.frame.size.width - 2*INSET;
     } else {
-        int smallerThumbsAcross = self.view.frame.size.width/MIN_THUMB_WIDTH;
+        int smallerThumbsAcross = (self.view.frame.size.width -
+                                   layout.minimumInteritemSpacing)/
+                            (MIN_THUMB_WIDTH + layout.minimumInteritemSpacing);
         if (smallerThumbsAcross > thumbsAcross)
             thumbsAcross = smallerThumbsAcross;
         thumbWidth = ((self.view.frame.size.width - INSET) / thumbsAcross)
         - thumbsAcross*INSET;
     }
-    NSLog(@"thumbs across: %d, thumb width: %.1f",
-          thumbsAcross, thumbWidth);
+//    NSLog(@"thumbs across: %d, thumb width: %.1f", thumbsAcross, thumbWidth);
+    collectionView.frame = CGRectInset(self.view.frame, INSET, INSET);
 }
 
 - (void) viewWillLayoutSubviews {
@@ -143,7 +146,7 @@ static NSString * const reuseIdentifier = @"Cell";
     for (SeqThumbView *thumbView in seqThumbViews) {
         [thumbView applyNewThumbWidth:thumbWidth];
     }
-    [collectionView reloadData];
+    [layout invalidateLayout];
 }
 
 - (void) checkDataNeeded {

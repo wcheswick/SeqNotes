@@ -70,8 +70,7 @@
         self.backgroundColor = [UIColor whiteColor];
         [self addSubview:subTitleLabel];
         
-        descLabel = [[UILabel alloc] initWithFrame:CGRectMake(INSET, BELOW(subTitleLabel.frame) + SEP,
-                                                              LATER, LATER)];
+        descLabel = [[UILabel alloc] init];
         descLabel.text = sequence.name;
         descLabel.font = [UIFont systemFontOfSize:14];
         descLabel.lineBreakMode = NSLineBreakByWordWrapping;
@@ -111,7 +110,8 @@
                                      context:nil];
     f.size.width = ceil(f.size.width);
     f.size.height = ceil(f.size.height);
-    f.origin = descLabel.frame.origin;
+    f.origin.x = INSET;
+    f.origin.y = BELOW(subTitleLabel.frame) + SEP;
     descLabel.frame = f;
     SET_VIEW_HEIGHT(self, BELOW(descLabel.frame) + INSET);
 }
