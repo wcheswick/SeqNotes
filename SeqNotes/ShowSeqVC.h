@@ -17,9 +17,9 @@ NS_ASSUME_NONNULL_BEGIN
     <UIScrollViewDelegate,
     MFMailComposeViewControllerDelegate,
     UIPickerViewDataSource,
-UIPickerViewDelegate>
+    UIPickerViewDelegate>
 
-- (id)initWithSequence:(Sequence *)s;
+- (id)initWithSequence:(Sequence *)s width:(CGFloat) w;
 
 @end
 

@@ -104,6 +104,7 @@ static NSString * const reuseIdentifier = @"Cell";
         progressView.progress = 0.0;
         [self.view addSubview:progressView];
         [self.view bringSubviewToFront:progressView];
+        progressView.hidden = YES;
         [self.view setNeedsDisplay];
         
         [self loadNextNewSequence];
@@ -128,7 +129,7 @@ static NSString * const reuseIdentifier = @"Cell";
         if (smallerThumbsAcross > thumbsAcross)
             thumbsAcross = smallerThumbsAcross;
         thumbWidth = ((self.view.frame.size.width - INSET) / thumbsAcross)
-        - thumbsAcross*INSET;
+             - thumbsAcross*INSET;
     }
 //    NSLog(@"thumbs across: %d, thumb width: %.1f", thumbsAcross, thumbWidth);
     collectionView.frame = CGRectInset(self.view.frame, INSET, INSET);
@@ -143,7 +144,9 @@ static NSString * const reuseIdentifier = @"Cell";
           self.view.frame.size.height);
     
     [self computeThumbWidth];
-    for (SeqThumbView *thumbView in seqThumbViews) {
+    NSArray *currentThumbs = [NSArray arrayWithArray:seqThumbViews];
+    // seqThumbViews can change on us during this loop
+    for (SeqThumbView *thumbView in currentThumbs) {
         [thumbView applyNewThumbWidth:thumbWidth];
     }
     [layout invalidateLayout];
@@ -214,25 +217,44 @@ static NSString * const reuseIdentifier = @"Cell";
     Sequence *sequence = [sequences objectAtIndex:index];
     assert(sequence);
     NSLog(@"sequence selected: #%zu, %@", index, sequence.seq);
-    
-    ShowSeqVC *svc = [[ShowSeqVC alloc] initWithSequence:sequence];
+#define new 1
+#ifdef new
+    ShowSeqVC *svc = [[ShowSeqVC alloc]
+                      initWithSequence:sequence
+                      width:MIN(self.view.frame.size.width, NICE_W) - 2*INSET];
     svc.modalPresentationStyle = UIModalPresentationPopover;
-    
+
     UINavigationController *nav = [[UINavigationController alloc]
                                    initWithRootViewController:svc];
     nav.modalPresentationStyle = UIModalPresentationPopover;
-    
     SeqThumbView *stv = [seqThumbViews objectAtIndex:index];
     UIView *thumbView = [stv superview];
     nav.popoverPresentationController.sourceView = thumbView;
     nav.popoverPresentationController.sourceRect = thumbView.bounds;
-    CGRect f = svc.view.frame;
-    f.origin.y = nav.navigationBar.frame.size.height;
-    f.size.height += f.origin.y;
-    f.size.width = MIN(self.view.frame.size.width, NICE_W) - 2*INSET;
-    svc.view.frame = f;
     nav.preferredContentSize = svc.view.frame.size;
     [self presentViewController:nav animated:YES completion:nil];
+#else
+    ShowSeqVC *svc = [[ShowSeqVC alloc]
+                      initWithSequence:sequence
+                      width:MIN(self.view.frame.size.width, NICE_W) - 2*INSET];
+    UINavigationController *nav = [[UINavigationController alloc]
+                                   initWithRootViewController:svc];
+    nav.modalPresentationStyle = UIModalPresentationPopover;
+    SeqThumbView *stv = [seqThumbViews objectAtIndex:index];
+    UIView *thumbView = [stv superview];
+    nav.popoverPresentationController.sourceView = thumbView;
+    nav.popoverPresentationController.sourceRect = thumbView.bounds;
+    nav.preferredContentSize = svc.view.frame.size;
+    [self presentViewController:nav animated:YES completion:nil];
+    
+#ifdef notdef
+    UIPopoverPresentationController *popvc = nav.popoverPresentationController;
+    popvc.delegate = self;
+    popvc.sourceView = self.view;
+    popvc.barButtonItem = sender;
+    [self presentViewController:nav animated:YES completion:nil];
+#endif
+#endif
 }
 
 - (void) showSequences {

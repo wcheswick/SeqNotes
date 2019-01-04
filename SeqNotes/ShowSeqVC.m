@@ -50,7 +50,7 @@
 @synthesize rateSlider;
 @synthesize oldMIDI, currentMIDI;
 
-- (id)initWithSequence:(Sequence *)s {
+- (id)initWithSequence:(Sequence *)s width:(CGFloat) w {
     self = [super init];
     if (self) {
         sequence = s;
@@ -64,49 +64,124 @@
             playOptions = [[PlayOptions alloc] init];
             [playOptions save];
         }
+        
+        containerView = [[UIView alloc]
+                         initWithFrame:CGRectMake(INSET, INSET, w - 2*INSET, LATER)];
+        containerView.backgroundColor = [UIColor yellowColor];
+        
+        UIView *soundControlView = [[UIView alloc] init];
+        soundControlView.frame = CGRectMake(0, 0, containerView.frame.size.width, LATER);
+        soundControlView.userInteractionEnabled = YES;
+        
+        play = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+        CGRect f;
+        f.origin.x = 0;
+        f.size.height = 2*LARGE_H - 2;
+        f.origin.y = 2;
+        f.size.width = f.size.height*1.4;
+        play.frame = f;
+        [play setTitle:@"▶️" forState:UIControlStateNormal];
+        [play setTitle:@"॥" forState:UIControlStateSelected];
+        play.titleLabel.font = [UIFont boldSystemFontOfSize:f.size.height - 8];
+        [play addTarget:self
+                 action:@selector(doPlay:)
+       forControlEvents:UIControlEventTouchUpInside];
+        play.backgroundColor = [UIColor whiteColor];
+        [soundControlView addSubview:play];
+        
+        musicSlider = [[UISlider alloc] initWithFrame:play.frame];
+        SET_VIEW_X(musicSlider, RIGHT(play.frame) + 20);
+        SET_VIEW_WIDTH(musicSlider, containerView.frame.size.width - musicSlider.frame.origin.x);
+        musicSlider.hidden = NO;
+        musicSlider.minimumValue = 0.0;
+        musicSlider.maximumValue = 1.0;
+        [musicSlider addTarget:self action:@selector(doChangePosition:) forControlEvents:UIControlEventValueChanged];
+        UIImage *smallNote = [UIImage imageWithContentsOfFile:[[NSBundle mainBundle]
+                                                               pathForResource:@"smallnote"
+                                                               ofType:@"png"]];
+        UIImage *scaledImage = [UIImage imageWithCGImage:smallNote.CGImage
+                                                   scale:10 //(smallNote.scale * f.size.height/smallNote.size.height)
+                                             orientation:(smallNote.imageOrientation)];
+        [musicSlider setThumbImage:scaledImage forState:UIControlStateNormal];
+        musicSlider.backgroundColor = [UIColor whiteColor];
+//        musicSlider.layer.borderWidth = 1.0;
+//        musicSlider.layer.borderColor = [UIColor redColor].CGColor;
+//        musicSlider.layer.cornerRadius = 5.0;
+        [soundControlView addSubview:musicSlider];
+        
+        // The picker chooses its own height
+        instrumentPicker = [[UIPickerView alloc] init];
+        SET_VIEW_Y(instrumentPicker, BELOW(musicSlider.frame));
+        SET_VIEW_X(instrumentPicker, (containerView.frame.size.width - instrumentPicker.frame.size.width)/2.0);
+        instrumentPicker.delegate = self;
+        [instrumentPicker selectRow:playOptions.instrumentIndex inComponent:0 animated:NO];
+//        instrumentPicker.layer.borderWidth = 0.5;
+//        instrumentPicker.layer.borderColor = [UIColor orangeColor].CGColor;
+ //       instrumentPicker.layer.cornerRadius = 5.0;
+        instrumentPicker.backgroundColor = [UIColor whiteColor];
+        [soundControlView addSubview:instrumentPicker];
+        
+        rateSlider = [[UISlider alloc] init];
+        f = instrumentPicker.frame;
+        f.origin.y = BELOW(f) + SEP;
+        f.size.height = musicSlider.frame.size.height;
+        rateSlider.frame = f;
+        rateSlider.minimumValue = 24;   // Larghissimo
+        rateSlider.maximumValue = 200;  // Prestissimo
+        rateSlider.value = playOptions.beatsPerMinute;
+        [rateSlider addTarget:self action:@selector(doChangeRate:) forControlEvents:UIControlEventValueChanged];
+//        rateSlider.layer.borderWidth = 0.5;
+//        rateSlider.layer.borderColor = [UIColor yellowColor].CGColor;
+ //       rateSlider.layer.cornerRadius = 5.0;
+        [soundControlView addSubview:rateSlider];
+
+        SET_VIEW_HEIGHT(soundControlView, BELOW(rateSlider.frame));
+        soundControlView.backgroundColor = [UIColor whiteColor];
+//        soundControlView.layer.borderWidth = 0.5;
+//        soundControlView.layer.borderColor = [UIColor blueColor].CGColor;
+ //       soundControlView.layer.cornerRadius = 5.0;
+        [containerView addSubview:soundControlView];
+        
+        SET_VIEW_HEIGHT(containerView, BELOW(soundControlView.frame));
+        
+#ifdef notdef
+        if (sequence.plotData) {
+            UIImage *plotImage = [UIImage imageWithData:sequence.plotData];
+            UIImageView *plotsView = [[UIImageView alloc] initWithImage:plotImage];
+            plotsView.contentMode = UIViewContentModeScaleAspectFit;
+            CGFloat aspect = plotImage.size.height/plotImage.size.width;
+            plotsView.frame = CGRectMake(0, BELOW(soundControlView.frame) + 3*SEP,
+                                         self.view.frame.size.width, self.view.frame.size.width*aspect);
+            [containerView addSubview:plotsView];
+            SET_VIEW_HEIGHT(containerView, BELOW(plotsView.frame));
+        } else {
+            SET_VIEW_HEIGHT(containerView, BELOW(soundControlView.frame));
+        }
+        
+        scrollView = [[UIScrollView alloc] init];
+        scrollView.pagingEnabled = NO;
+        scrollView.autoresizingMask = UIViewAutoresizingFlexibleHeight;
+        scrollView.showsVerticalScrollIndicator = YES;
+        scrollView.userInteractionEnabled = YES;
+        scrollView.exclusiveTouch = NO;
+        scrollView.bounces = NO;
+        scrollView.delaysContentTouches = YES;
+        scrollView.canCancelContentTouches = YES;
+        [scrollView addSubview:containerView];
+        
+        SET_VIEW_WIDTH(containerView, scrollView.frame.size.width);
+        scrollView.contentSize = containerView.frame.size;
+        
+        [self.view addSubview:scrollView];
+#endif
+        [self.view addSubview:containerView];
+        
+        self.view.frame = CGRectMake(0, LATER,
+                                     w, containerView.frame.size.height + INSET);
+
+        self.view.backgroundColor = [UIColor whiteColor];
     }
     return self;
-}
-
-- (void) loadInstruments {
-    NSString *instrumentPath = [[NSBundle mainBundle]
-                                     pathForResource:@"InstrumentList"ofType:@""];
-    if (!instrumentPath) {
-        NSLog(@"Instrument list missing, inconceivable");
-        return;
-    }
-    
-    NSError *error;
-    NSString *instrumentFileContents = [NSString stringWithContentsOfFile:instrumentPath
-                                                                 encoding:NSUTF8StringEncoding
-                                                                    error:&error];
-    if (!instrumentFileContents || [instrumentFileContents isEqualToString:@""] || error) {
-        NSLog(@"instrumentFileContents list error: %@", [error localizedDescription]);
-        return;
-    }
-    instrumentList = [[NSMutableArray alloc] init];
-
-    // Entries look like this:
-    //    # from echo "inst 1" | fluidsynth "GeneralUser GS MuseScore v1.442.sf2"
-    //    000-000 Stereo Grand
-    //    000-001 Bright Grand
-    
-    NSArray *lines = [instrumentFileContents componentsSeparatedByString:@"\n"];
-    if (lines.count == 0) {
-        NSLog(@"instrumentFileContents list is empty");
-        return;
-    }
-    for (NSString *line in lines) {
-        if ([line hasPrefix:@"#"] || line.length == 0)
-            continue;
-        NSString *bank = [line substringWithRange:NSMakeRange(0, 3)];
-        if (![bank isEqualToString:@"000"])
-            continue;
-        // assume all present, and sequential
-        NSString *name = [line substringFromIndex:@"000-000 ".length];
-        [instrumentList addObject:name];
-    }
-    NSLog(@"Instruments read: %lu", (unsigned long)instrumentList.count);
 }
 
 - (void)viewDidLoad {
@@ -122,128 +197,31 @@
                                       initWithBarButtonSystemItem:UIBarButtonSystemItemDone
                                       target:self action:@selector(doDone:)];
     self.navigationItem.leftBarButtonItem = leftBarButton;
-
-    containerView = [[UIView alloc] init];
-    containerView.frame = CGRectMake(INSET, self.navigationController.navigationBar.frame.size.height, 310, LATER);
-    
-    UIView *soundControlView = [[UIView alloc] init];
-    soundControlView.frame = CGRectMake(0, 0, containerView.frame.size.width, LATER);
-    soundControlView.userInteractionEnabled = YES;
-    
-    play = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-    CGRect f;
-    f.origin.x = 0;
-    f.size.height = 2*LARGE_H - 2;
-    f.origin.y = 2;
-    f.size.width = f.size.height*1.4;
-    play.frame = f;
-    [play setTitle:@"▶️" forState:UIControlStateNormal];
-    [play setTitle:@"॥" forState:UIControlStateSelected];
-    play.titleLabel.font = [UIFont boldSystemFontOfSize:f.size.height - 8];
-    [play addTarget:self
-             action:@selector(doPlay:)
-   forControlEvents:UIControlEventTouchUpInside];
-    [soundControlView addSubview:play];
-    
-    musicSlider = [[UISlider alloc] init];
-    f.origin.x = RIGHT(f) + 20;
-    f.origin.y = 0;
-    f.size.width = 250;
-    f.size.height = play.frame.size.height;
-    musicSlider.frame = f;
-    musicSlider.hidden = NO;
-    musicSlider.minimumValue = 0.0;
-    musicSlider.maximumValue = 1.0;
-    [musicSlider addTarget:self action:@selector(doChangePosition:) forControlEvents:UIControlEventValueChanged];
-    UIImage *smallNote = [UIImage imageWithContentsOfFile:[[NSBundle mainBundle]
-                                                           pathForResource:@"smallnote"
-                                                           ofType:@"png"]];
-    UIImage *scaledImage = [UIImage imageWithCGImage:smallNote.CGImage
-                                               scale:10 //(smallNote.scale * f.size.height/smallNote.size.height)
-                                         orientation:(smallNote.imageOrientation)];
-    [musicSlider setThumbImage:scaledImage forState:UIControlStateNormal];
-    [soundControlView addSubview:musicSlider];
-    
-#define INST_H  300
-    instrumentPicker = [[UIPickerView alloc] init];
-    instrumentPicker.frame = CGRectMake(0, BELOW(musicSlider.frame),
-                                        RIGHT(musicSlider.frame), INST_H);
-    instrumentPicker.delegate = self;
-    [instrumentPicker selectRow:playOptions.instrumentIndex inComponent:0 animated:NO];
-    instrumentPicker.layer.borderWidth = 0.5;
-    instrumentPicker.layer.borderColor = [UIColor lightGrayColor].CGColor;
-    instrumentPicker.layer.cornerRadius = 5.0;
-    [soundControlView addSubview:instrumentPicker];
-    
-    rateSlider = [[UISlider alloc] init];
-    f = instrumentPicker.frame;
-    f.origin.y = BELOW(f) + SEP;
-    f.size.height = musicSlider.frame.size.height;
-    rateSlider.frame = f;
-    rateSlider.minimumValue = 24;   // Larghissimo
-    rateSlider.maximumValue = 200;  // Prestissimo
-    rateSlider.value = playOptions.beatsPerMinute;
-    [rateSlider addTarget:self action:@selector(doChangeRate:) forControlEvents:UIControlEventValueChanged];
-    [soundControlView addSubview:rateSlider];
-    SET_VIEW_HEIGHT(soundControlView, BELOW(rateSlider.frame));
-    [containerView addSubview:soundControlView];
-    
-    SET_VIEW_HEIGHT(containerView, BELOW(soundControlView.frame));
-    
-#ifdef notdef
-    if (sequence.plotData) {
-        UIImage *plotImage = [UIImage imageWithData:sequence.plotData];
-        UIImageView *plotsView = [[UIImageView alloc] initWithImage:plotImage];
-        plotsView.contentMode = UIViewContentModeScaleAspectFit;
-        CGFloat aspect = plotImage.size.height/plotImage.size.width;
-        plotsView.frame = CGRectMake(0, BELOW(soundControlView.frame) + 3*SEP,
-                                     self.view.frame.size.width, self.view.frame.size.width*aspect);
-        [containerView addSubview:plotsView];
-        SET_VIEW_HEIGHT(containerView, BELOW(plotsView.frame));
-    } else {
-        SET_VIEW_HEIGHT(containerView, BELOW(soundControlView.frame));
-    }
-    
-    scrollView = [[UIScrollView alloc] init];
-    scrollView.pagingEnabled = NO;
-    scrollView.autoresizingMask = UIViewAutoresizingFlexibleHeight;
-    scrollView.showsVerticalScrollIndicator = YES;
-    scrollView.userInteractionEnabled = YES;
-    scrollView.exclusiveTouch = NO;
-    scrollView.bounces = NO;
-    scrollView.delaysContentTouches = YES;
-    scrollView.canCancelContentTouches = YES;
-    [scrollView addSubview:containerView];
-    
-    SET_VIEW_WIDTH(containerView, scrollView.frame.size.width);
-    scrollView.contentSize = containerView.frame.size;
-    
-    [self.view addSubview:scrollView];
-#endif
-    [self.view addSubview:containerView];
-    
-    SET_VIEW_HEIGHT(self.view, containerView.frame.size.height);
-    self.view.backgroundColor = [UIColor whiteColor];
-    NSLog(@"ff vdl: %@", NSStringFromCGRect(self.view.frame));
+    SET_VIEW_Y(self.view, BELOW(self.navigationController.navigationBar.frame));
+    NSLog(@"svc vdl: %@", NSStringFromCGRect(self.view.frame));
 }
 
 - (void) viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     
-    NSLog(@"svc vwa: %@", NSStringFromCGRect(self.view.frame));
+    CGFloat top = self.navigationController.navigationBar.frame.size.height;
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone) {
+        top += [UIApplication sharedApplication].statusBarFrame.size.height;
+    }
+    SET_VIEW_Y(containerView, top);
+}
 
-    CGRect f = self.view.frame;
-    f.origin.y = self.navigationController.navigationBar.frame.size.height;
-    f.size.height -= f.origin.y;
-    self.view.frame = f;
-    NSLog(@"svc vwa: %@", NSStringFromCGRect(self.view.frame));
-#ifdef notdef
-    scrollView.frame = CGRectInset(f, INSET, INSET);
-    
-    SET_VIEW_WIDTH(containerView, scrollView.frame.size.width);
-    scrollView.contentSize = containerView.frame.size;
-#endif
-    
+- (void) viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+
+    NSLog(@"svc vda: %@", NSStringFromCGRect(self.view.frame));
+
+}
+
+- (CGFloat)pickerView:(UIPickerView *)pickerView
+    widthForComponent:(NSInteger)component {
+    return 200;
+ //   return containerView.frame.size.width;
 }
 
 - (NSInteger)numberOfComponentsInPickerView:(UIPickerView *)pickerView {
@@ -539,6 +517,47 @@ long *sequenceArray = 0;
     
     // Close the Mail Interface
     [self dismissViewControllerAnimated:YES completion:NULL];
+}
+
+- (void) loadInstruments {
+    NSString *instrumentPath = [[NSBundle mainBundle]
+                                pathForResource:@"InstrumentList"ofType:@""];
+    if (!instrumentPath) {
+        NSLog(@"Instrument list missing, inconceivable");
+        return;
+    }
+    
+    NSError *error;
+    NSString *instrumentFileContents = [NSString stringWithContentsOfFile:instrumentPath
+                                                                 encoding:NSUTF8StringEncoding
+                                                                    error:&error];
+    if (!instrumentFileContents || [instrumentFileContents isEqualToString:@""] || error) {
+        NSLog(@"instrumentFileContents list error: %@", [error localizedDescription]);
+        return;
+    }
+    instrumentList = [[NSMutableArray alloc] init];
+    
+    // Entries look like this:
+    //    # from echo "inst 1" | fluidsynth "GeneralUser GS MuseScore v1.442.sf2"
+    //    000-000 Stereo Grand
+    //    000-001 Bright Grand
+    
+    NSArray *lines = [instrumentFileContents componentsSeparatedByString:@"\n"];
+    if (lines.count == 0) {
+        NSLog(@"instrumentFileContents list is empty");
+        return;
+    }
+    for (NSString *line in lines) {
+        if ([line hasPrefix:@"#"] || line.length == 0)
+            continue;
+        NSString *bank = [line substringWithRange:NSMakeRange(0, 3)];
+        if (![bank isEqualToString:@"000"])
+            continue;
+        // assume all present, and sequential
+        NSString *name = [line substringFromIndex:@"000-000 ".length];
+        [instrumentList addObject:name];
+    }
+    NSLog(@"Instruments read: %lu", (unsigned long)instrumentList.count);
 }
 
 @end
