@@ -8,6 +8,7 @@
 
 #import "MainVC.h"
 #import "ShowSeqVC.h"
+#import "ShowPlotVC.h"
 #import "SeqThumbView.h"
 #import "UICircularProgressView.h"
 #import "Defines.h"
@@ -28,6 +29,8 @@
 @property (assign)              long dataLoadsRunning;
 @property (assign)              CGFloat thumbWidth;
 
+@property (assign)              size_t sequencesToLoad;
+
 @end
 
 @implementation MainVC
@@ -38,6 +41,7 @@
 @synthesize collectionView, layout;
 @synthesize seqThumbViews;
 @synthesize thumbWidth;
+@synthesize sequencesToLoad;
 
 static NSString * const reuseIdentifier = @"Cell";
 
@@ -89,6 +93,7 @@ static NSString * const reuseIdentifier = @"Cell";
     if (!sequences) {
         sequences = [[NSMutableArray alloc] init];
         incomingSequences = [self initializeSequences];
+        sequencesToLoad = incomingSequences.count;
         NSLog(@"loading %lu new sequences", (unsigned long)incomingSequences.count);
 
         CGRect f;
@@ -104,7 +109,6 @@ static NSString * const reuseIdentifier = @"Cell";
         progressView.progress = 0.0;
         [self.view addSubview:progressView];
         [self.view bringSubviewToFront:progressView];
-        progressView.hidden = YES;
         [self.view setNeedsDisplay];
         
         [self loadNextNewSequence];
@@ -197,19 +201,28 @@ static NSString * const reuseIdentifier = @"Cell";
         [audioButton addTarget:self
                         action:@selector(showAudio:)
               forControlEvents:UIControlEventTouchUpInside];
-        audioButton.tag = THUMB_INDEX_BIAS + seqThumbViews.count - 1;
+        audioButton.tag = SOUND_INDEX_BIAS + seqThumbViews.count - 1;
     }
-    [collectionView reloadData];
+    UIButton *plotButton = [thumbView viewWithTag:PLOT_VIEW_TAG];
+    if (plotButton) {
+        [plotButton addTarget:self
+                        action:@selector(showAudio:)
+              forControlEvents:UIControlEventTouchUpInside];
+        plotButton.tag = PLOT_INDEX_BIAS + seqThumbViews.count - 1;
+    }
+   [collectionView reloadData];
 }
 
 - (IBAction)showAudio:(UIButton *)sender {
-//    UIView *tv = [but superview];
-    
-    if (sender.tag < THUMB_INDEX_BIAS) {
-        NSLog(@"button touch, not audio");
+    size_t index;
+    if (IS_PLOT_BUTTON_TAG(sender.tag)) {
+        index = sender.tag - PLOT_INDEX_BIAS;
+    } else if (IS_SOUND_BUTTON_TAG(sender.tag)) {
+        index = sender.tag - SOUND_INDEX_BIAS;
+    } else {
+        NSLog(@"unexpected button touch tag");
         return;
     }
-    size_t index = sender.tag - THUMB_INDEX_BIAS;
     if (index >= sequences.count) {
         NSLog(@"button touch, index out of range: %ld", (long)sender.tag);
         return;
@@ -217,44 +230,31 @@ static NSString * const reuseIdentifier = @"Cell";
     Sequence *sequence = [sequences objectAtIndex:index];
     assert(sequence);
     NSLog(@"sequence selected: #%zu, %@", index, sequence.seq);
-#define new 1
-#ifdef new
-    ShowSeqVC *svc = [[ShowSeqVC alloc]
-                      initWithSequence:sequence
-                      width:MIN(self.view.frame.size.width, NICE_W) - 2*INSET];
-    svc.modalPresentationStyle = UIModalPresentationPopover;
 
+    UIViewController *vc;
+    if (IS_PLOT_BUTTON_TAG(sender.tag)) {
+        ShowPlotVC *pvc = [[ShowPlotVC alloc]
+                         initWithSequence:sequence
+                         width:self.view.frame.size.width - 2*INSET];
+        vc = pvc;
+    } else {
+        ShowSeqVC *svc = [[ShowSeqVC alloc]
+                                 initWithSequence:sequence
+                                 width:MIN(self.view.frame.size.width, NICE_W) - 2*INSET];
+        vc = svc;
+    }
+
+    vc.modalPresentationStyle = UIModalPresentationPopover;
     UINavigationController *nav = [[UINavigationController alloc]
-                                   initWithRootViewController:svc];
+                                   initWithRootViewController:vc];
     nav.modalPresentationStyle = UIModalPresentationPopover;
-    SeqThumbView *stv = [seqThumbViews objectAtIndex:index];
-    UIView *thumbView = [stv superview];
-    nav.popoverPresentationController.sourceView = thumbView;
-    nav.popoverPresentationController.sourceRect = thumbView.bounds;
-    nav.preferredContentSize = svc.view.frame.size;
-    [self presentViewController:nav animated:YES completion:nil];
-#else
-    ShowSeqVC *svc = [[ShowSeqVC alloc]
-                      initWithSequence:sequence
-                      width:MIN(self.view.frame.size.width, NICE_W) - 2*INSET];
-    UINavigationController *nav = [[UINavigationController alloc]
-                                   initWithRootViewController:svc];
-    nav.modalPresentationStyle = UIModalPresentationPopover;
-    SeqThumbView *stv = [seqThumbViews objectAtIndex:index];
-    UIView *thumbView = [stv superview];
-    nav.popoverPresentationController.sourceView = thumbView;
-    nav.popoverPresentationController.sourceRect = thumbView.bounds;
-    nav.preferredContentSize = svc.view.frame.size;
-    [self presentViewController:nav animated:YES completion:nil];
     
-#ifdef notdef
-    UIPopoverPresentationController *popvc = nav.popoverPresentationController;
-    popvc.delegate = self;
-    popvc.sourceView = self.view;
-    popvc.barButtonItem = sender;
+    SeqThumbView *stv = [seqThumbViews objectAtIndex:index];
+    UIView *thumbView = [stv superview];
+    nav.popoverPresentationController.sourceView = thumbView;
+    nav.popoverPresentationController.sourceRect = thumbView.bounds;
+    nav.preferredContentSize = vc.view.frame.size;
     [self presentViewController:nav animated:YES completion:nil];
-#endif
-#endif
 }
 
 - (void) showSequences {
@@ -279,6 +279,9 @@ static NSString * const reuseIdentifier = @"Cell";
         [self.collectionView reloadData];
         return;
     }
+    progressView.progress = ((float)sequencesToLoad - (float)incomingSequences.count) / (float)sequencesToLoad;
+    [progressView setNeedsDisplay];
+    
     Sequence *s = [incomingSequences objectAtIndex:0];
     [incomingSequences removeObjectAtIndex:0];
     

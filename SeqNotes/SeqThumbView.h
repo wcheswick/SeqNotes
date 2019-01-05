@@ -11,9 +11,17 @@
 
 #define EAR_W   30
 
-#define PLOT_VIEW_TAB   1000
-#define SOUND_VIEW_TAG  2000
-#define THUMB_INDEX_BIAS  3000
+// Type identifiers from the thumb view
+#define PLOT_VIEW_TAG   1
+#define SOUND_VIEW_TAG  2
+
+// INDEX/type identifiers from the main screen
+#define PLOT_INDEX_BIAS     1000
+#define SOUND_INDEX_BIAS    2000
+
+#define IS_PLOT_BUTTON_TAG(t)   ((t) >= PLOT_INDEX_BIAS && \
+            (t) < SOUND_INDEX_BIAS)
+#define IS_SOUND_BUTTON_TAG(t)   ((t) >= SOUND_INDEX_BIAS)
 
 NS_ASSUME_NONNULL_BEGIN
 

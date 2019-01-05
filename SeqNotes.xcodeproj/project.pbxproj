@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		FB08BDA521D13D9D009307AA /* ear.jpg in Resources */ = {isa = PBXBuildFile; fileRef = FB08BDA421D13D9D009307AA /* ear.jpg */; };
+		FB12FDE121E0FB1E00029195 /* ShowPlotVC.m in Sources */ = {isa = PBXBuildFile; fileRef = FB12FDE021E0FB1E00029195 /* ShowPlotVC.m */; };
 		FB340FB821CBCD2500126A3C /* SeqToMIDI.c in Sources */ = {isa = PBXBuildFile; fileRef = FB340FB721CBCD2500126A3C /* SeqToMIDI.c */; };
 		FB340FBE21CC2A6300126A3C /* smallnote.png in Resources */ = {isa = PBXBuildFile; fileRef = FB340FBD21CC2A6300126A3C /* smallnote.png */; };
 		FB36C5C621C6D451004E7EFE /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FB36C5C521C6D451004E7EFE /* CoreAudio.framework */; };
@@ -31,6 +32,8 @@
 
 /* Begin PBXFileReference section */
 		FB08BDA421D13D9D009307AA /* ear.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = ear.jpg; sourceTree = "<group>"; };
+		FB12FDDF21E0FB1E00029195 /* ShowPlotVC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ShowPlotVC.h; sourceTree = "<group>"; };
+		FB12FDE021E0FB1E00029195 /* ShowPlotVC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ShowPlotVC.m; sourceTree = "<group>"; };
 		FB340FB621CBCD2500126A3C /* SeqToMIDI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SeqToMIDI.h; sourceTree = "<group>"; };
 		FB340FB721CBCD2500126A3C /* SeqToMIDI.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SeqToMIDI.c; sourceTree = "<group>"; };
 		FB340FBB21CC266100126A3C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -145,6 +148,8 @@
 				FBEBED4321CD864400D41433 /* MainVC.m */,
 				FBDC07A321CD8CA000A7F0FF /* SeqThumbView.h */,
 				FBDC07A421CD8CA000A7F0FF /* SeqThumbView.m */,
+				FB12FDDF21E0FB1E00029195 /* ShowPlotVC.h */,
+				FB12FDE021E0FB1E00029195 /* ShowPlotVC.m */,
 				FB99422721C58B9E009A30E4 /* ShowSeqVC.h */,
 				FB99422521C58B9E009A30E4 /* ShowSeqVC.m */,
 				FBEBED3F21CD364000D41433 /* PlayOptions.h */,
@@ -252,6 +257,7 @@
 				FB99421C21C58B89009A30E4 /* BrowseOEISVC.m in Sources */,
 				FB99422A21C58B9E009A30E4 /* ShowSeqVC.m in Sources */,
 				FB99422B21C58B9E009A30E4 /* Sequence.m in Sources */,
+				FB12FDE121E0FB1E00029195 /* ShowPlotVC.m in Sources */,
 				FB340FB821CBCD2500126A3C /* SeqToMIDI.c in Sources */,
 				FB99422C21C58B9E009A30E4 /* UICircularProgressView.m in Sources */,
 				FBDC07A521CD8CA000A7F0FF /* SeqThumbView.m in Sources */,

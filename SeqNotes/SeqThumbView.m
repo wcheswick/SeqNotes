@@ -51,6 +51,17 @@
         [busyDownloadingView stopAnimating];
         [self addSubview:busyDownloadingView];
         
+        plotButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        plotButton.frame = earButton.frame;
+        SET_VIEW_Y(plotButton, BELOW(earButton.frame) +SEP);
+        [plotButton.imageView setContentMode: UIViewContentModeScaleAspectFit];
+        plotButton.tag = PLOT_VIEW_TAG;
+        plotButton.hidden = YES;
+        plotButton.layer.borderColor = [UIColor darkGrayColor].CGColor;
+        plotButton.layer.borderWidth = 1.0;
+        plotButton.layer.cornerRadius = 3.0;
+        [self addSubview:plotButton];
+
         titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(INSET, INSET,
                                                               LATER,
                                                               LABEL_H)];
@@ -88,11 +99,11 @@
 }
 
 - (void) applyNewThumbWidth:(CGFloat) w {
-    
     self.frame = CGRectMake(0, 0, w, LATER);
     SET_VIEW_X(earButton, w - INSET - EAR_W);
+    SET_VIEW_X(plotButton, earButton.frame.origin.x);
     SET_VIEW_WIDTH(titleLabel, earButton.frame.origin.x - SEP);
-    
+
     CGRect f = [subTitleLabel.text boundingRectWithSize:CGSizeMake(titleLabel.frame.size.width, CGFLOAT_MAX)
                                                 options:NSStringDrawingUsesLineFragmentOrigin
                                              attributes:@{NSFontAttributeName: subTitleLabel.font}
@@ -125,6 +136,13 @@
         [busyDownloadingView startAnimating];
     }
     [earButton setNeedsDisplay];
+    
+    if (plotButton.hidden && sequence.plotData) {   // install the icon
+        UIImage *plotImage = [UIImage imageWithData:sequence.plotData];
+        [self.plotButton setImage:plotImage forState:UIControlStateNormal];
+        plotButton.hidden = NO;
+        [plotButton setNeedsDisplay];
+    }
     [busyDownloadingView setNeedsDisplay];
 }
 

@@ -33,14 +33,6 @@
     return self;
 }
 
-- (void) loadDataFromOEIS {
-    NSLog(@"fetching sequence %@", seq);
-    if (![self fetchFromOEIS])
-        return;
-    [self fetchPlots];
-//    [self fetchMIDI];
-}
-
 #define kSeq    @"Seq"
 #define kName   @"Name"
 #define kDescription    @"Description"
@@ -82,6 +74,7 @@
 - (void) loadBasicDataFromOEIS:(id<sequenceProtocol>)caller {
     target = caller;
     [self fetchFromOEIS];
+    [self fetchPlots];
     [self downloadComplete];
 }
 
