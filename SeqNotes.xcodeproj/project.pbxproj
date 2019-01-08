@@ -20,7 +20,7 @@
 		FB99420C21C58B0C009A30E4 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = FB99420B21C58B0C009A30E4 /* main.m */; };
 		FB99421421C58B74009A30E4 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = FB99421221C58B74009A30E4 /* AppDelegate.m */; };
 		FB99421C21C58B89009A30E4 /* BrowseOEISVC.m in Sources */ = {isa = PBXBuildFile; fileRef = FB99421A21C58B89009A30E4 /* BrowseOEISVC.m */; };
-		FB99422A21C58B9E009A30E4 /* ShowSeqVC.m in Sources */ = {isa = PBXBuildFile; fileRef = FB99422521C58B9E009A30E4 /* ShowSeqVC.m */; };
+		FB99422A21C58B9E009A30E4 /* PlaySeqVC.m in Sources */ = {isa = PBXBuildFile; fileRef = FB99422521C58B9E009A30E4 /* PlaySeqVC.m */; };
 		FB99422B21C58B9E009A30E4 /* Sequence.m in Sources */ = {isa = PBXBuildFile; fileRef = FB99422621C58B9E009A30E4 /* Sequence.m */; };
 		FB99422C21C58B9E009A30E4 /* UICircularProgressView.m in Sources */ = {isa = PBXBuildFile; fileRef = FB99422921C58B9E009A30E4 /* UICircularProgressView.m */; };
 		FBDC07A521CD8CA000A7F0FF /* SeqThumbView.m in Sources */ = {isa = PBXBuildFile; fileRef = FBDC07A421CD8CA000A7F0FF /* SeqThumbView.m */; };
@@ -56,9 +56,9 @@
 		FB99421A21C58B89009A30E4 /* BrowseOEISVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BrowseOEISVC.m; sourceTree = "<group>"; };
 		FB99422021C58B93009A30E4 /* Neil notes */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "Neil notes"; sourceTree = "<group>"; };
 		FB99422421C58B9E009A30E4 /* Sequence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Sequence.h; sourceTree = "<group>"; };
-		FB99422521C58B9E009A30E4 /* ShowSeqVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ShowSeqVC.m; sourceTree = "<group>"; };
+		FB99422521C58B9E009A30E4 /* PlaySeqVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PlaySeqVC.m; sourceTree = "<group>"; };
 		FB99422621C58B9E009A30E4 /* Sequence.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Sequence.m; sourceTree = "<group>"; };
-		FB99422721C58B9E009A30E4 /* ShowSeqVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ShowSeqVC.h; sourceTree = "<group>"; };
+		FB99422721C58B9E009A30E4 /* PlaySeqVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PlaySeqVC.h; sourceTree = "<group>"; };
 		FB99422821C58B9E009A30E4 /* UICircularProgressView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UICircularProgressView.h; sourceTree = "<group>"; };
 		FB99422921C58B9E009A30E4 /* UICircularProgressView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UICircularProgressView.m; sourceTree = "<group>"; };
 		FBDC07A321CD8CA000A7F0FF /* SeqThumbView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SeqThumbView.h; sourceTree = "<group>"; };
@@ -150,8 +150,8 @@
 				FBDC07A421CD8CA000A7F0FF /* SeqThumbView.m */,
 				FB12FDDF21E0FB1E00029195 /* ShowPlotVC.h */,
 				FB12FDE021E0FB1E00029195 /* ShowPlotVC.m */,
-				FB99422721C58B9E009A30E4 /* ShowSeqVC.h */,
-				FB99422521C58B9E009A30E4 /* ShowSeqVC.m */,
+				FB99422721C58B9E009A30E4 /* PlaySeqVC.h */,
+				FB99422521C58B9E009A30E4 /* PlaySeqVC.m */,
 				FBEBED3F21CD364000D41433 /* PlayOptions.h */,
 				FBEBED4021CD364000D41433 /* PlayOptions.m */,
 				FB99421921C58B89009A30E4 /* BrowseOEISVC.h */,
@@ -255,7 +255,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FB99421C21C58B89009A30E4 /* BrowseOEISVC.m in Sources */,
-				FB99422A21C58B9E009A30E4 /* ShowSeqVC.m in Sources */,
+				FB99422A21C58B9E009A30E4 /* PlaySeqVC.m in Sources */,
 				FB99422B21C58B9E009A30E4 /* Sequence.m in Sources */,
 				FB12FDE121E0FB1E00029195 /* ShowPlotVC.m in Sources */,
 				FB340FB821CBCD2500126A3C /* SeqToMIDI.c in Sources */,

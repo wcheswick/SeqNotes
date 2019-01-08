@@ -1,5 +1,5 @@
 //
-//  ShowSeqVC.h
+//  PlaySeqVC.h
 //  SeqShow
 //
 //  Created by ches on 12/12/18.
@@ -13,7 +13,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ShowSeqVC : UIViewController
+@interface PlaySeqVC : UIViewController
     <UIScrollViewDelegate,
     MFMailComposeViewControllerDelegate,
     UIPickerViewDataSource,

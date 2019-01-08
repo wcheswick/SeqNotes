@@ -7,7 +7,7 @@
 //
 
 #import "MainVC.h"
-#import "ShowSeqVC.h"
+#import "PlaySeqVC.h"
 #import "ShowPlotVC.h"
 #import "SeqThumbView.h"
 #import "UICircularProgressView.h"
@@ -238,10 +238,10 @@ static NSString * const reuseIdentifier = @"Cell";
                          width:self.view.frame.size.width - 2*INSET];
         vc = pvc;
     } else {
-        ShowSeqVC *svc = [[ShowSeqVC alloc]
+        PlaySeqVC *pvc = [[PlaySeqVC alloc]
                                  initWithSequence:sequence
                                  width:MIN(self.view.frame.size.width, NICE_W) - 2*INSET];
-        vc = svc;
+        vc = pvc;
     }
 
     vc.modalPresentationStyle = UIModalPresentationPopover;

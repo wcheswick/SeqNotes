@@ -1,5 +1,5 @@
 //
-//  ShowSeqVC.m
+//  PlaySeqVC.m
 //  SeqShow
 //
 //  Created by ches on 12/12/18.
@@ -12,11 +12,11 @@
 
 #import "SeqToMIDI.h"
 
-#import "ShowSeqVC.h"
+#import "PlaySeqVC.h"
 #import "PlayOptions.h"
 #import "Defines.h"
 
-@interface ShowSeqVC ()
+@interface PlaySeqVC ()
 
 @property (nonatomic, strong)   Sequence *sequence;
 @property (nonatomic, strong)   UIView *containerView;
@@ -35,7 +35,7 @@
 
 @end
 
-@implementation ShowSeqVC
+@implementation PlaySeqVC
 
 @synthesize sequence;
 @synthesize containerView, scrollView;
@@ -92,7 +92,6 @@
         musicSlider = [[UISlider alloc] initWithFrame:play.frame];
         SET_VIEW_X(musicSlider, RIGHT(play.frame) + 20);
         SET_VIEW_WIDTH(musicSlider, containerView.frame.size.width - musicSlider.frame.origin.x);
-        musicSlider.hidden = NO;
         musicSlider.minimumValue = 0.0;
         musicSlider.maximumValue = 1.0;
         [musicSlider addTarget:self action:@selector(doChangePosition:) forControlEvents:UIControlEventValueChanged];
@@ -250,22 +249,14 @@ numberOfRowsInComponent:(NSInteger)component {
     [self switchToNewPlayer];
 }
 
-- (IBAction)doChangePosition:(UIView *)sender {
-    UISlider *view = (UISlider *)sender;
-    player.currentPosition = view.value * player.duration;
-}
-
-- (IBAction)doChangeRate:(UIView *)sender {
-    UISlider *slider = (UISlider *)sender;
-    playOptions.beatsPerMinute = slider.value;
-    [playOptions save];
-    [self switchToNewPlayer];
-}
-
 - (IBAction)doPlay:(UIView *)sender {
     if (!play.selected) {
         if (!player) {
             player = [self makePlayer];
+        }
+        if (player.currentPosition >= player.duration) {
+            player.currentPosition = 0;
+            [self showCurrentPlayingPosition];
         }
         [self startPlayer];
     } else {
@@ -283,12 +274,22 @@ numberOfRowsInComponent:(NSInteger)component {
     [play setNeedsDisplay];
 }
 
-- (void) stopPlayer {
+- (void) discardPlayer {
     [self pausePlayer];
-    if (player) {
-        [player stop];
-    }
     player = nil;
+}
+
+- (IBAction)doChangePosition:(UIView *)sender {
+    UISlider *view = (UISlider *)sender;
+    player.currentPosition = view.value * player.duration;
+    [self showCurrentPlayingPosition];
+}
+
+- (IBAction)doChangeRate:(UIView *)sender {
+    UISlider *slider = (UISlider *)sender;
+    playOptions.beatsPerMinute = slider.value;
+    [playOptions save];
+    [self switchToNewPlayer];
 }
 
 - (AVMIDIPlayer *) makePlayer { // from current instrument and rate settings
@@ -362,17 +363,14 @@ numberOfRowsInComponent:(NSInteger)component {
         [self.player play:^(void) {
             NSLog(@"playing complete");
             dispatch_async(dispatch_get_main_queue(), ^(void) {
-                [self stopPlayer];
+                [self pausePlayer];
             });
         }];
     }];
 
+    [self showCurrentPlayingPosition];
     play.selected = YES;
     [play setNeedsDisplay];
-    
-    musicSlider.value = self.player.currentPosition/self.player.duration;
-    musicSlider.hidden = NO;
-    [musicSlider setNeedsDisplay];
 
     checkProgressTimer = [NSTimer scheduledTimerWithTimeInterval:1.0
                                      target:self
@@ -381,10 +379,13 @@ numberOfRowsInComponent:(NSInteger)component {
                                     repeats:YES];
 }
 
+- (void) showCurrentPlayingPosition {
+    musicSlider.value = self.player.currentPosition/self.player.duration;
+    [musicSlider setNeedsDisplay];
+}
+
 - (void) tick {
-    float fracDone = self.player.currentPosition/self.player.duration;
-    [self.musicSlider setValue:fracDone animated:YES];
-    [self.musicSlider setNeedsDisplay];
+    [self showCurrentPlayingPosition];
 }
 
 long *sequenceArray = 0;
@@ -457,7 +458,7 @@ long *sequenceArray = 0;
 }
 
 - (IBAction)doDone:(UISwipeGestureRecognizer *)sender {
-    [self stopPlayer];
+    [self discardPlayer];
     [self dismissViewControllerAnimated:YES completion:NULL];
 }
 
