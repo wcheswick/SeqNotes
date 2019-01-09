@@ -26,7 +26,7 @@
     // Do any additional setup after loading the view.
     
     self.navigationController.navigationBar.hidden = NO;
-    self.navigationController.navigationBar.opaque = YES;
+//    self.navigationController.navigationBar.opaque = YES;
     self.title = @"OEIS";
     
     UIBarButtonItem *rightBarButton = [[UIBarButtonItem alloc]

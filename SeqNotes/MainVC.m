@@ -66,6 +66,7 @@ static NSString * const reuseIdentifier = @"Cell";
                       collectionViewLayout:layout];
     [collectionView setDataSource:self];
     [collectionView setDelegate:self];
+    collectionView.backgroundColor = [UIColor blackColor];
     
     [self.collectionView registerClass:[UICollectionViewCell class]
             forCellWithReuseIdentifier:reuseIdentifier];
@@ -80,7 +81,7 @@ static NSString * const reuseIdentifier = @"Cell";
     //    setenv("CFNETWORK_DIAGNOSTICS", "1", 1);
     
     self.navigationController.navigationBar.hidden = NO;
-    self.navigationController.navigationBar.opaque = YES;
+//    self.navigationController.navigationBar.opaque = YES;
     self.title = @"SeqShow";
     
     UIBarButtonItem *rightBarButton = [[UIBarButtonItem alloc]
@@ -90,6 +91,16 @@ static NSString * const reuseIdentifier = @"Cell";
     self.navigationItem.rightBarButtonItem = rightBarButton;
     
     sequences = [NSKeyedUnarchiver unarchiveObjectWithFile:SEQUENCES_ARCHIVE];
+    if (sequences) {    //sanity/update check
+        for (Sequence *s in sequences) {
+            if (!s.name) {
+                NSLog(@"** sequence data problem**");
+                sequences = nil;
+                break;
+            }
+//            NSLog(@"%@  %10lu  %10lu", s.name, (unsigned long)s.values.count, (unsigned long)s.plotData.length);
+        }
+    }
     if (!sequences) {
         sequences = [[NSMutableArray alloc] init];
         incomingSequences = [self initializeSequences];
@@ -103,9 +114,9 @@ static NSString * const reuseIdentifier = @"Cell";
         progressView = [[UICircularProgressView alloc] initWithFrame:f];
         progressView.trackTintColor = [UIColor clearColor];
         progressView.progressTintColor = [UIColor blueColor];
-        progressView.progressViewStyle = UICircularProgressViewStylePie;
+        progressView.progressViewStyle = UICircularProgressViewStyleCircle;
         progressView.backgroundColor = [UIColor clearColor];
-        progressView.opaque = NO;
+//        progressView.opaque = NO;
         progressView.progress = 0.0;
         [self.view addSubview:progressView];
         [self.view bringSubviewToFront:progressView];
@@ -183,7 +194,7 @@ static NSString * const reuseIdentifier = @"Cell";
     for (int i=0; i<seqThumbViews.count; i++) {
         SeqThumbView *stv = [seqThumbViews objectAtIndex:i];
         Sequence *s = stv.sequence;
-        if ([s.seq isEqualToString:sequence.seq]) {   // found our slot
+        if ([s.name isEqualToString:sequence.name]) {   // found our slot
             s.target = self;
             [stv adjustThumb];
             return;
@@ -199,61 +210,80 @@ static NSString * const reuseIdentifier = @"Cell";
     UIButton *audioButton = [thumbView viewWithTag:SOUND_VIEW_TAG];
     if (audioButton) {
         [audioButton addTarget:self
-                        action:@selector(showAudio:)
+                        action:@selector(actionTouch:)
               forControlEvents:UIControlEventTouchUpInside];
         audioButton.tag = SOUND_INDEX_BIAS + seqThumbViews.count - 1;
     }
     UIButton *plotButton = [thumbView viewWithTag:PLOT_VIEW_TAG];
     if (plotButton) {
         [plotButton addTarget:self
-                        action:@selector(showAudio:)
+                        action:@selector(actionTouch:)
               forControlEvents:UIControlEventTouchUpInside];
         plotButton.tag = PLOT_INDEX_BIAS + seqThumbViews.count - 1;
     }
    [collectionView reloadData];
 }
 
-- (IBAction)showAudio:(UIButton *)sender {
-    size_t index;
+- (IBAction)actionTouch:(UIView *)sender {
     if (IS_PLOT_BUTTON_TAG(sender.tag)) {
-        index = sender.tag - PLOT_INDEX_BIAS;
+        [self showPlot: sender.tag - PLOT_INDEX_BIAS];
     } else if (IS_SOUND_BUTTON_TAG(sender.tag)) {
-        index = sender.tag - SOUND_INDEX_BIAS;
+        [self showAudio: sender.tag - SOUND_INDEX_BIAS];
     } else {
         NSLog(@"unexpected button touch tag");
         return;
     }
-    if (index >= sequences.count) {
-        NSLog(@"button touch, index out of range: %ld", (long)sender.tag);
+}
+
+- (void) showAudio:(size_t) seqIndex {
+    if (seqIndex >= sequences.count) {
+        NSLog(@"button touch, index out of range: %ld", seqIndex);
         return;
     }
-    Sequence *sequence = [sequences objectAtIndex:index];
+    Sequence *sequence = [sequences objectAtIndex:seqIndex];
     assert(sequence);
-    NSLog(@"sequence selected: #%zu, %@", index, sequence.seq);
+    NSLog(@"sequence selected: #%zu, %@", seqIndex, sequence.name);
 
-    UIViewController *vc;
-    if (IS_PLOT_BUTTON_TAG(sender.tag)) {
-        ShowPlotVC *pvc = [[ShowPlotVC alloc]
-                         initWithSequence:sequence
-                         width:self.view.frame.size.width - 2*INSET];
-        vc = pvc;
-    } else {
-        PlaySeqVC *pvc = [[PlaySeqVC alloc]
-                                 initWithSequence:sequence
-                                 width:MIN(self.view.frame.size.width, NICE_W) - 2*INSET];
-        vc = pvc;
-    }
+    PlaySeqVC *pvc = [[PlaySeqVC alloc]
+                      initWithSequence:sequence
+                      width:MIN(self.view.frame.size.width, NICE_W) - 2*INSET];
 
-    vc.modalPresentationStyle = UIModalPresentationPopover;
+    pvc.modalPresentationStyle = UIModalPresentationPopover;
     UINavigationController *nav = [[UINavigationController alloc]
-                                   initWithRootViewController:vc];
+                                   initWithRootViewController:pvc];
     nav.modalPresentationStyle = UIModalPresentationPopover;
-    
-    SeqThumbView *stv = [seqThumbViews objectAtIndex:index];
+
+    SeqThumbView *stv = [seqThumbViews objectAtIndex:seqIndex];
     UIView *thumbView = [stv superview];
     nav.popoverPresentationController.sourceView = thumbView;
     nav.popoverPresentationController.sourceRect = thumbView.bounds;
-    nav.preferredContentSize = vc.view.frame.size;
+    nav.preferredContentSize = pvc.view.frame.size;
+    [self presentViewController:nav animated:YES completion:nil];
+}
+
+- (void) showPlot:(size_t) seqIndex {
+    if (seqIndex >= sequences.count) {
+        NSLog(@"button touch, index out of range: %ld", seqIndex);
+        return;
+    }
+    Sequence *sequence = [sequences objectAtIndex:seqIndex];
+    assert(sequence);
+    NSLog(@"sequence selected: #%zu, %@", seqIndex, sequence.name);
+
+    ShowPlotVC *pvc = [[ShowPlotVC alloc]
+                       initWithSequence:sequence
+                       width:self.view.frame.size.width - 2*INSET];
+
+    pvc.modalPresentationStyle = UIModalPresentationPopover;
+    UINavigationController *nav = [[UINavigationController alloc]
+                                   initWithRootViewController:pvc];
+    nav.modalPresentationStyle = UIModalPresentationPopover;
+
+    SeqThumbView *stv = [seqThumbViews objectAtIndex:seqIndex];
+    UIView *thumbView = [stv superview];
+    nav.popoverPresentationController.sourceView = thumbView;
+    nav.popoverPresentationController.sourceRect = thumbView.bounds;
+    nav.preferredContentSize = pvc.view.frame.size;
     [self presentViewController:nav animated:YES completion:nil];
 }
 
@@ -333,6 +363,7 @@ static NSString * const reuseIdentifier = @"Cell";
                                   forIndexPath:indexPath];
     SeqThumbView *thumbView = [seqThumbViews objectAtIndex:indexPath.row];
     [cell addSubview:thumbView];
+    NSLog(@" collection %@", thumbView.sequence.name);
     return cell;
 }
 
@@ -354,34 +385,39 @@ static NSString * const reuseIdentifier = @"Cell";
 #ifdef notdef
     // Uncomment these methods to specify if an action menu should be displayed for the specified item, and react to actions performed on the item
 
-- (BOOL)collectionView:(UICollectionView *)collectionView shouldHighlightItemAtIndexPath:(NSIndexPath *)indexPath {
+- (BOOL)collectionView:(UICollectionView *)collectionView
+shouldHighlightItemAtIndexPath:(NSIndexPath *)indexPath {
 	return YES;
 }
 
-- (BOOL)collectionView:(UICollectionView *)collectionView shouldSelectItemAtIndexPath:(NSIndexPath *)indexPath {
+- (BOOL)collectionView:(UICollectionView *)collectionView
+shouldSelectItemAtIndexPath:(NSIndexPath *)indexPath {
     return YES;
 }
 
-- (BOOL)collectionView:(UICollectionView *)collectionView shouldShowMenuForItemAtIndexPath:(NSIndexPath *)indexPath {
+- (BOOL)collectionView:(UICollectionView *)collectionView
+shouldShowMenuForItemAtIndexPath:(NSIndexPath *)indexPath {
 	return NO;
 }
  */
 
-- (BOOL)collectionView:(UICollectionView *)collectionView canPerformAction:(SEL)action forItemAtIndexPath:(NSIndexPath *)indexPath withSender:(id)sender {
+- (BOOL)collectionView:(UICollectionView *)collectionView
+      canPerformAction:(SEL)action forItemAtIndexPath:(NSIndexPath *)indexPath
+            withSender:(id)sender {
 	return YES;
 }
 #endif
 
 - (void)collectionView:(UICollectionView *)collectionView
+didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
+    [self showAudio:indexPath.row];
+}
+
+- (void)collectionView:(UICollectionView *)collectionView
          performAction:(SEL)action
     forItemAtIndexPath:(NSIndexPath *)indexPath
             withSender:(id)sender {
-#ifdef notused
-    Sequence *seq = [sequences objectAtIndex:indexPath.row];
-    ShowSeqVC *svc = [[ShowSeqVC alloc] initWithSequence:seq];
-    svc.view.frame = self.view.frame;
-    [self.navigationController pushViewController:svc animated:YES];
-#endif
+    [self showAudio:indexPath.row];
 }
 
 - (NSMutableArray *) initializeSequences {
@@ -462,7 +498,7 @@ static NSString * const reuseIdentifier = @"Cell";
 - (void) save {
     if (![NSKeyedArchiver archiveRootObject:sequences
                                      toFile:SEQUENCES_ARCHIVE])
-        NSLog(@"sequences save failed");
+        NSLog(@"***** sequences save failed");
 }
 
 @end

@@ -97,7 +97,7 @@
 	UIGraphicsPopContext();
 }
 
-#define kLineWidth 0.5
+#define kLineWidth 3.0
 
 - (void)drawRect:(CGRect)rect {
     CGContextRef context = UIGraphicsGetCurrentContext();

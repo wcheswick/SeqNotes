@@ -24,9 +24,9 @@
 @property (nonatomic, strong)   UISlider *musicSlider;
 @property (nonatomic, strong)   UIProgressView *progressView;
 @property (nonatomic, strong)   AVMIDIPlayer *player;
-@property (nonatomic, strong)   NSData *oldMIDI, *currentMIDI;
 @property (nonatomic, strong)   UIButton *play;
 @property (nonatomic, strong)   NSTimer *checkProgressTimer;
+@property (nonatomic, strong)   NSTimer *updatePlayerTimer;
 @property (nonatomic, strong)   NSMutableArray *instrumentList;
 @property (nonatomic, strong)   UIPickerView *instrumentPicker;
 @property (nonatomic, strong)   PlayOptions *playOptions;
@@ -40,7 +40,7 @@
 @synthesize sequence;
 @synthesize containerView, scrollView;
 @synthesize progressView;
-@synthesize checkProgressTimer;
+@synthesize checkProgressTimer, updatePlayerTimer;
 @synthesize musicSlider;
 @synthesize player, play;
 @synthesize instrumentList;
@@ -48,7 +48,6 @@
 @synthesize playOptions;
 @synthesize playerOp;
 @synthesize rateSlider;
-@synthesize oldMIDI, currentMIDI;
 
 - (id)initWithSequence:(Sequence *)s width:(CGFloat) w {
     self = [super init];
@@ -56,7 +55,6 @@
         sequence = s;
         playerOp = nil;
         // these must not be released until we are done with a player switch
-        oldMIDI = currentMIDI = nil;
         [self loadInstruments];
         
         playOptions = [NSKeyedUnarchiver unarchiveObjectWithFile:PLAY_OPTIONS_ARCHIVE];
@@ -187,10 +185,10 @@
     [super viewDidLoad];
     
     self.navigationController.navigationBar.hidden = NO;
-    self.navigationController.navigationBar.opaque = YES;
-    self.title = sequence.seq;
+//    self.navigationController.navigationBar.opaque = YES;
+    self.title = sequence.name;
     player = nil;
-    checkProgressTimer = nil;
+    checkProgressTimer = updatePlayerTimer = nil;
     
     UIBarButtonItem *leftBarButton = [[UIBarButtonItem alloc]
                                       initWithBarButtonSystemItem:UIBarButtonSystemItemDone
@@ -210,17 +208,11 @@
     SET_VIEW_Y(containerView, top);
 }
 
-- (void) viewDidAppear:(BOOL)animated {
-    [super viewDidAppear:animated];
-
-    NSLog(@"svc vda: %@", NSStringFromCGRect(self.view.frame));
-
-}
+#define PICKER_W    200
 
 - (CGFloat)pickerView:(UIPickerView *)pickerView
     widthForComponent:(NSInteger)component {
-    return 200;
- //   return containerView.frame.size.width;
+    return PICKER_W;
 }
 
 - (NSInteger)numberOfComponentsInPickerView:(UIPickerView *)pickerView {
@@ -275,6 +267,10 @@ numberOfRowsInComponent:(NSInteger)component {
 }
 
 - (void) discardPlayer {
+    if (updatePlayerTimer) {
+        [updatePlayerTimer invalidate];
+        updatePlayerTimer = nil;
+    }
     [self pausePlayer];
     player = nil;
 }
@@ -294,7 +290,6 @@ numberOfRowsInComponent:(NSInteger)component {
 
 - (AVMIDIPlayer *) makePlayer { // from current instrument and rate settings
     OSStatus rc;
-    NSData *newMIDI = [self genMIDI];
     
     NSString *bankPath = [[NSBundle mainBundle]
                           pathForResource:@"GeneralUser GS MuseScore v1.442"
@@ -306,12 +301,11 @@ numberOfRowsInComponent:(NSInteger)component {
     NSURL *bankURL = [NSURL fileURLWithPath:bankPath];
     
     MusicSequence s;
-    // Initialise the music sequence
     NewMusicSequence(&s);
     
-    oldMIDI = currentMIDI;  // keep the old point around for current player
-    currentMIDI = newMIDI;
-    rc = MusicSequenceFileLoadData (s, (__bridge CFDataRef _Nonnull)(currentMIDI), 0, 0);
+    NSData *newMIDI = [self genMIDI];
+    rc = MusicSequenceFileLoadData (s, (__bridge CFDataRef _Nonnull)(newMIDI),
+                                    0, 0);
     if (rc) {
         [self musicError:@"MusicSequenceFileLoadData" err:rc];
         return nil;
@@ -319,7 +313,10 @@ numberOfRowsInComponent:(NSInteger)component {
     
     NSError *error;
     
-    AVMIDIPlayer *newPlayer = [[AVMIDIPlayer alloc] initWithData:currentMIDI soundBankURL:bankURL error:&error];
+    // This uses some 80 MB:
+    AVMIDIPlayer *newPlayer = [[AVMIDIPlayer alloc] initWithData:newMIDI
+                                                    soundBankURL:bankURL
+                                                           error:&error];
     if (error) {
         NSLog(@"player initialization error: %@", [error localizedDescription]);
         return nil;
@@ -329,8 +326,15 @@ numberOfRowsInComponent:(NSInteger)component {
 
 // Generate a new player from current play settings, turn of the old, if any, and
 // fire up the new one in the same place.  Regen the MIDI if necessary.
+//
+// If we do this too fast, the kernel gets upset, so limit the update rate.
+
+#define MIN_UPDATE_TIME 0.3     // seconds
 
 - (void) switchToNewPlayer {
+    if (updatePlayerTimer) {    // too soon
+        return;
+    }
     AVMIDIPlayer *newPlayer = [self makePlayer];
     if (!newPlayer) {
         NSLog(@" ** inconceivable, player creation error");
@@ -348,6 +352,9 @@ numberOfRowsInComponent:(NSInteger)component {
     player = newPlayer;
     player.currentPosition = currentPosition >= 0 ? currentPosition : 0;
     [self pausePlayer];
+    
+    updatePlayerTimer = [NSTimer timerWithTimeInterval:MIN_UPDATE_TIME target:self selector:@selector(playerUpdateOK:) userInfo:nil repeats:NO];
+    
 #ifdef notyet
     [player prepareToPlay];
     if (currentPosition >= 0) {
@@ -356,10 +363,17 @@ numberOfRowsInComponent:(NSInteger)component {
 #endif
 }
 
+- (IBAction)playerUpdateOK:(id)sender {
+    [checkProgressTimer invalidate];
+    updatePlayerTimer = nil;
+    [self switchToNewPlayer];
+}
+
 - (void) startPlayer {
     playerOp = [[NSOperationQueue alloc] init];
     [playerOp addOperationWithBlock: ^{
-        NSLog(@"start playing: %@, %d", self.player, self.player.playing);
+        NSLog(@"start playing: %@, %@", self.player,
+              self.player.playing ? @"playing" : @"not playing");
         [self.player play:^(void) {
             NSLog(@"playing complete");
             dispatch_async(dispatch_get_main_queue(), ^(void) {
@@ -371,7 +385,6 @@ numberOfRowsInComponent:(NSInteger)component {
     [self showCurrentPlayingPosition];
     play.selected = YES;
     [play setNeedsDisplay];
-
     checkProgressTimer = [NSTimer scheduledTimerWithTimeInterval:1.0
                                      target:self
                                    selector:@selector(tick)
@@ -379,22 +392,26 @@ numberOfRowsInComponent:(NSInteger)component {
                                     repeats:YES];
 }
 
-- (void) showCurrentPlayingPosition {
-    musicSlider.value = self.player.currentPosition/self.player.duration;
-    [musicSlider setNeedsDisplay];
-}
-
 - (void) tick {
     [self showCurrentPlayingPosition];
+}
+
+- (void) showCurrentPlayingPosition {
+    float newValue = self.player.currentPosition/self.player.duration;
+    if (musicSlider.value == newValue)
+        return;
+    musicSlider.value = newValue;
+    [musicSlider setNeedsDisplay];
 }
 
 long *sequenceArray = 0;
 
 - (long *) makeArray {
-    sequenceArray = (long *)malloc(sizeof(long)*sequence.values.count);
+    NSArray *values = [sequence values];
+    sequenceArray = (long *)malloc(sizeof(long)*values.count);
     assert (sequenceArray);
-    for (size_t i=0; i<sequence.values.count; i++) {
-        NSNumber *n = [sequence.values objectAtIndex:i];
+    for (size_t i=0; i<values.count; i++) {
+        NSNumber *n = [values objectAtIndex:i];
         sequenceArray[i] = [n longValue];
     }
     return sequenceArray;
@@ -408,7 +425,8 @@ long *sequenceArray = 0;
     NSFileHandle *midiFileHandle = [NSFileHandle fileHandleForUpdatingAtPath:midiTmp];
     
     NSLog(@"generate MIDI...");
-    seqToMidi(midiFileHandle.fileDescriptor, [self makeArray], sequence.values.count,
+    long *valueArray = [self makeArray];
+    seqToMidi(midiFileHandle.fileDescriptor, valueArray, sequence.values.count,
               1, 1, 1,
               (int)playOptions.beatsPerMinute,
               0, VOL,
@@ -416,7 +434,7 @@ long *sequenceArray = 0;
               VELON, VELOFF,
               PMOD, POFF, DMOD, DOFF, MAX_VALUES);
     [midiFileHandle closeFile];
-    free(sequenceArray);    // crude
+    free(valueArray);
     sequenceArray = 0;
     
     //    [self mail:midiTmp];

@@ -12,69 +12,63 @@
 
 @implementation Sequence
 
-@synthesize seq, name, description;
+@synthesize name, title, description;
 @synthesize shortTitle, shortComment;
-@synthesize values, valuesUnavailable;
-@synthesize plotData, midiData;
+@synthesize valuesUnavailable;
 @synthesize target;
 
 - (id)initSequence: (NSString *)s {
     self = [super init];
     if (self) {
-        seq = s;
-        name = description = @"";
+        name = s;
+        title = description = @"";
         shortTitle = shortComment = nil;
-        plotData = midiData = nil;
         description = nil;
-        values = nil;
         valuesUnavailable = NO;
         target = nil;
     }
     return self;
 }
 
-#define kSeq    @"Seq"
+#define kSeq    @"Seq"  // "seq" is deprecated. if found, force reload from OEIS
+
 #define kName   @"Name"
+#define kTitle   @"Title"
 #define kDescription    @"Description"
 #define kShortTitle     @"ShortTitle"
 #define kShortComment   @"ShortComment"
-#define kValues         @"Values"
 #define kValuesUnavailable  @"ValuesUnavailable"
-#define kPlotData       @"PlotData"
-#define kMidiData       @"MidiData"
 
 - (id) initWithCoder: (NSCoder *)coder {
     self = [super init];
     if (self) {
-        seq = [coder decodeObjectForKey: kSeq];
-        name = [coder decodeObjectForKey: kName];
+        NSString *seq = [coder decodeObjectForKey: kSeq];
+        if (seq)    // old archived data format, reload
+            return nil;
+        name = [coder decodeObjectForKey:kName];
+        title = [coder decodeObjectForKey: kTitle];
         description = [coder decodeObjectForKey: kDescription];
         shortTitle = [coder decodeObjectForKey: kShortTitle];
         shortComment = [coder decodeObjectForKey: kShortComment];
-        values = [coder decodeObjectForKey:kValues];
         valuesUnavailable = [coder decodeBoolForKey:kValuesUnavailable];
-        plotData = [coder decodeObjectForKey:kPlotData];
-        midiData = [coder decodeObjectForKey:kMidiData];
     }
     return self;
 }
 
 - (void)encodeWithCoder:(NSCoder *)coder {
-    [coder encodeObject:seq forKey:kSeq];
     [coder encodeObject:name forKey:kName];
+    [coder encodeObject:title forKey:kTitle];
     [coder encodeObject:description forKey:kDescription];
     [coder encodeObject:shortTitle forKey:kShortTitle];
     [coder encodeObject:shortComment forKey:kShortComment];
-    [coder encodeObject:values forKey:kValues];
     [coder encodeBool:valuesUnavailable forKey:kValuesUnavailable];
-    [coder encodeObject:plotData forKey:kPlotData];
-    [coder encodeObject:midiData forKey:kMidiData];
 }
 
 - (void) loadBasicDataFromOEIS:(id<sequenceProtocol>)caller {
     target = caller;
-    [self fetchFromOEIS];
+    [self fetchSummary];
     [self fetchPlots];
+    [self fetchValues];
     [self downloadComplete];
 }
 
@@ -85,14 +79,8 @@
     });
 }
 
-- (void) fetchPlots {
-    NSString *plotUrl = [NSString stringWithFormat:@"https://oeis.org/%@/graph?png=1", seq];
-    NSURL *URL = [NSURL URLWithString:plotUrl];
-    plotData = [NSData dataWithContentsOfURL:URL];
-}
-
-- (BOOL) fetchFromOEIS {
-    NSString *url = [NSString stringWithFormat:@"https://oeis.org/search?q=id:%@&fmt=text", seq];
+- (BOOL) fetchSummary {
+    NSString *url = [NSString stringWithFormat:@"https://oeis.org/search?q=id:%@&fmt=text", name];
     NSURL *URL = [NSURL URLWithString:url];
     NSError *error;
     NSString *contents = [NSString stringWithContentsOfURL:URL
@@ -136,13 +124,14 @@
             //           [self appendNumbers: data];
         } else if ([line hasPrefix:@"%U"]) {   // third line of numbers
             //           [self appendNumbers: data];
-        } else if ([line hasPrefix:@"%N"]) {   // name
-            name = data;
+        } else if ([line hasPrefix:@"%N"]) {   // title
+            title = data;
         }
     }
     return YES;
 }
 
+#ifdef notused
 - (void) appendNumbers: (NSString *) list {
     NSArray *numbers = [list componentsSeparatedByString:@","];
     for (NSString *number in numbers) {
@@ -151,15 +140,64 @@
         }
     }
 }
+#endif
+
+- (NSString *) pathToPlotData {
+    return [NSString stringWithFormat:@"./%@.plotdata", name];
+}
+
+- (NSString *) pathToValues {
+    return [NSString stringWithFormat:@"./%@-values.archive", name];
+}
+
+- (BOOL) havePlots {
+    return [[NSFileManager defaultManager] fileExistsAtPath:[self pathToPlotData]];
+}
+
+- (BOOL) haveValues {
+    return [[NSFileManager defaultManager] fileExistsAtPath:[self pathToValues]];
+}
+
+- (BOOL) haveDavidMidi {
+    return NO;
+}
+
+- (NSArray *) values {
+    if (![self haveValues])
+        return nil;
+    return [NSKeyedUnarchiver unarchiveObjectWithFile:[self pathToValues]];
+}
+
+- (void) fetchPlots {
+    if ([self havePlots])
+        return;
+    
+    NSString *plotUrl = [NSString stringWithFormat:@"https://oeis.org/%@/graph?png=1", name];
+    NSURL *URL = [NSURL URLWithString:plotUrl];
+    NSData *plotData = [NSData dataWithContentsOfURL:URL];
+    [plotData writeToFile:[self pathToPlotData] atomically:NO];
+}
 
 - (NSString *) fetchValues {
-    NSString *number = [[seq substringFromIndex:@"A".length] substringToIndex:@"000000".length];
-    NSString *plotUrl = [NSString stringWithFormat:@"https://oeis.org/%@/b%@.txt", seq, number];
+    if ([[NSFileManager defaultManager] fileExistsAtPath:[self pathToValues]])
+        return nil;
+    
+#ifdef notdef
+    NSString *plotUrl = [NSString stringWithFormat:@"https://oeis.org/%@/graph?png=1", name];
     NSURL *URL = [NSURL URLWithString:plotUrl];
+    NSData *plotData = [NSData dataWithContentsOfURL:URL];
+    [plotData writeToFile:[self pathToPlotData] atomically:NO];
+#endif
+    
+    NSString *number = [[name substringFromIndex:@"A".length] substringToIndex:@"000000".length];
+    NSString *valuesURL = [NSString stringWithFormat:@"https://oeis.org/%@/b%@.txt", name, number];
+    NSURL *URL = [NSURL URLWithString:valuesURL];
     NSError *error;
     NSString *contents = [NSString stringWithContentsOfURL:URL
                                                   encoding:NSUTF8StringEncoding
                                                      error:&error];
+    NSMutableArray *values;
+
     if (!contents) {
         valuesUnavailable = YES;    // XXX network might be down, this is too permanent
         return [NSString stringWithFormat:@"OEIS fetch failed: %@", [error localizedDescription]];
@@ -186,18 +224,22 @@
         }
         valuesUnavailable = NO;
     }
+    if (![NSKeyedArchiver archiveRootObject:values
+                                     toFile:[self pathToValues]])
+        NSLog(@"values save failed");
     dispatch_async(dispatch_get_main_queue(), ^(void){
         [self->target valuesFetchedForSequence:self];
     });
     return nil;
 }
 
+#ifdef notdef   // debugging, to compare with David Applegate's results XXXXX
 - (void) fetchMIDI {
     NSMutableData *body = [NSMutableData data];
     NSString *davesParams = [NSString stringWithFormat:@"midi=1&SAVE=SAVE&seq=%@&bpm=100&vol=100&voice=%d&velon=80&veloff=80&pmod=88&poff=20&dmod=1&doff=0&cutoff=%d\n",
-                             seq, VOICE, MAX_VALUES];
+                             name, VOICE, MAX_VALUES];
     NSString *appParams  = [NSString stringWithFormat:@"midi=1&SAVE=SAVE&seq=%@&bpm=%d&vol=%d&voice=%d&velon=%d&veloff=%d&pmod=%d&poff=%d&dmod=%d&doff=%d&cutoff=%d\n",
-                           seq, BPM, VOL, VOICE, VELON, VELOFF, PMOD, POFF, DMOD, DOFF, MAX_VALUES];
+                           name, BPM, VOL, VOICE, VELON, VELOFF, PMOD, POFF, DMOD, DOFF, MAX_VALUES];
     
     if (![davesParams isEqualToString:appParams]) {
         NSLog(@"%@", davesParams);
@@ -214,7 +256,7 @@
     config.HTTPCookieAcceptPolicy = NO;
 //    config.URLCache = NSURLRequestUseProtocolCachePolicy;
     NSURLSession *session = [NSURLSession sessionWithConfiguration:config];
-    NSString *midiUrl = [NSString stringWithFormat:@"https://oeis.org/play?seq=%@", seq];
+    NSString *midiUrl = [NSString stringWithFormat:@"https://oeis.org/play?seq=%@", name];
     
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:midiUrl]];
     request.HTTPMethod = @"POST";
@@ -245,19 +287,38 @@
                  }];
     [uploadTask resume];
 }
+#endif
 
 - (NSString *) titleToUse {
-    return shortTitle ? shortTitle : name;
+    return shortTitle ? shortTitle : title;
 }
 
 - (NSString *) subtitleToUse {
     return shortComment ? shortComment : description;
 }
 
+- (UIImage *) plotImage {
+    NSData *plotImageData = [NSData dataWithContentsOfFile:[self pathToPlotData]];
+    if (!plotImageData)
+        return nil;
+    return [UIImage imageWithData:plotImageData];
+}
+
+- (UIImage *) plotIconForWidth:(CGFloat) width {
+    UIImage *plotImage = [self plotImage];
+    if (!plotImage)
+        return nil;
+//    CGFloat aspect = plotImage.size.height/plotImage.size.width;
+    UIImage *plotIcon = [UIImage imageWithCGImage:plotImage.CGImage
+                        scale:width / plotImage.size.width
+                  orientation:(plotImage.imageOrientation)];
+    return plotIcon;
+}
+
 - (void) dump {
-    NSLog(@"%@  %@  %@", seq, name, description);
+    NSLog(@"%@  %@  %@", name, title, description);
     NSLog(@"  (%@  %@)", shortTitle, shortComment);
-    NSLog(@"  %@", values);
+//    NSLog(@"  %@", values);
 }
 
 @end

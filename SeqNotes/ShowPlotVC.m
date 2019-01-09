@@ -32,14 +32,13 @@
                          initWithFrame:CGRectMake(INSET, INSET, w - 2*INSET, LATER)];
         containerView.backgroundColor = [UIColor yellowColor];
  
-        UIImage *plotImage = [UIImage imageWithData:sequence.plotData];
+        UIImage *plotImage = [sequence plotImage];
         UIImageView *plotsView = [[UIImageView alloc] initWithImage:plotImage];
         plotsView.contentMode = UIViewContentModeScaleAspectFit;
         CGFloat aspect = plotImage.size.height/plotImage.size.width;
         plotsView.frame = CGRectMake(0, 0,
                                      containerView.frame.size.width,
                                      containerView.frame.size.width*aspect);
-        plotsView.opaque = YES;
         [containerView addSubview:plotsView];
         SET_VIEW_HEIGHT(containerView, BELOW(plotsView.frame));
         
@@ -66,8 +65,8 @@
     [super viewDidLoad];
     
     self.navigationController.navigationBar.hidden = NO;
-    self.navigationController.navigationBar.opaque = YES;
-    self.title = sequence.seq;
+//    self.navigationController.navigationBar.opaque = YES;
+    self.title = sequence.name;
     
     UIBarButtonItem *leftBarButton = [[UIBarButtonItem alloc]
                                       initWithBarButtonSystemItem:UIBarButtonSystemItemDone

@@ -47,7 +47,7 @@
                                initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
         busyDownloadingView.frame = earButton.frame;
         busyDownloadingView.hidesWhenStopped = YES;
-        busyDownloadingView.opaque = YES;
+//        busyDownloadingView.opaque = YES;
         [busyDownloadingView stopAnimating];
         [self addSubview:busyDownloadingView];
         
@@ -65,7 +65,7 @@
         titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(INSET, INSET,
                                                               LATER,
                                                               LABEL_H)];
-        titleLabel.text = sequence.seq;
+        titleLabel.text = sequence.name;
         titleLabel.font = [UIFont boldSystemFontOfSize:LABEL_FONT_SIZE];
         self.layer.borderColor = [UIColor blackColor].CGColor;
         self.layer.borderWidth = 0.5;
@@ -82,7 +82,7 @@
         [self addSubview:subTitleLabel];
         
         descLabel = [[UILabel alloc] init];
-        descLabel.text = sequence.name;
+        descLabel.text = sequence.title;
         descLabel.font = [UIFont systemFontOfSize:14];
         descLabel.lineBreakMode = NSLineBreakByWordWrapping;
         descLabel.numberOfLines = 0;
@@ -92,8 +92,8 @@
         self.layer.borderWidth = 0.5;
         self.backgroundColor = [UIColor whiteColor];
 
-        [self adjustThumb];
         [self applyNewThumbWidth: w];
+        [self adjustThumb];
     }
     return self;
 }
@@ -103,6 +103,9 @@
     SET_VIEW_X(earButton, w - INSET - EAR_W);
     SET_VIEW_X(plotButton, earButton.frame.origin.x);
     SET_VIEW_WIDTH(titleLabel, earButton.frame.origin.x - SEP);
+    [earButton setNeedsDisplay];
+    [plotButton setNeedsDisplay];
+    [titleLabel setNeedsDisplay];
 
     CGRect f = [subTitleLabel.text boundingRectWithSize:CGSizeMake(titleLabel.frame.size.width, CGFLOAT_MAX)
                                                 options:NSStringDrawingUsesLineFragmentOrigin
@@ -112,6 +115,7 @@
     f.size.height = ceil(f.size.height);
     f.origin = subTitleLabel.frame.origin;
     subTitleLabel.frame = f;
+    [subTitleLabel setNeedsDisplay];
 
     SET_VIEW_WIDTH(descLabel, self.frame.size.width - 2*INSET);
     
@@ -124,11 +128,13 @@
     f.origin.x = INSET;
     f.origin.y = BELOW(subTitleLabel.frame) + SEP;
     descLabel.frame = f;
+    [descLabel setNeedsDisplay];
     SET_VIEW_HEIGHT(self, BELOW(descLabel.frame) + INSET);
+    [self setNeedsDisplay];
 }
 
 - (void) adjustThumb {
-    if (sequence.values) {
+    if ([sequence haveValues]) {
         earButton.hidden = NO;
         [busyDownloadingView stopAnimating];
     } else {
@@ -137,9 +143,9 @@
     }
     [earButton setNeedsDisplay];
     
-    if (plotButton.hidden && sequence.plotData) {   // install the icon
-        UIImage *plotImage = [UIImage imageWithData:sequence.plotData];
-        [self.plotButton setImage:plotImage forState:UIControlStateNormal];
+    if (plotButton.hidden && [sequence havePlots]) {   // install the icon
+        UIImage *plotIcon = [sequence plotIconForWidth:plotButton.frame.size.width];
+        [self.plotButton setImage:plotIcon forState:UIControlStateNormal];
         plotButton.hidden = NO;
         [plotButton setNeedsDisplay];
     }
