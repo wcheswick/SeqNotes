@@ -25,9 +25,8 @@
 @property (nonatomic, strong)   UIProgressView *progressView;
 @property (nonatomic, strong)   AVMIDIPlayer *player;
 @property (nonatomic, strong)   UIButton *play;
-@property (nonatomic, strong)   UIButton *playOEIS;
 @property (nonatomic, strong)   NSTimer *checkProgressTimer;
-@property (nonatomic, strong)   NSTimer *updatePlayerTimer;
+@property (nonatomic, strong)   NSDate *lastPlayerChange;
 @property (nonatomic, strong)   NSMutableArray *instrumentList;
 @property (nonatomic, strong)   NSMutableDictionary *instrumentNamesToIndex;
 @property (nonatomic, strong)   UIPickerView *instrumentPicker;
@@ -35,6 +34,7 @@
 @property (nonatomic, strong)   NSOperationQueue *playerOp;
 @property (nonatomic, strong)   UISlider *rateSlider;
 @property (nonatomic, strong)   NSData *MIDIFromOEIS;
+@property (nonatomic, strong)   NSTimer *recallPlayerChangeTimer;
 
 @end
 
@@ -43,9 +43,10 @@
 @synthesize sequence;
 @synthesize containerView, scrollView;
 @synthesize progressView;
-@synthesize checkProgressTimer, updatePlayerTimer;
+@synthesize checkProgressTimer, lastPlayerChange;
+@synthesize recallPlayerChangeTimer;
 @synthesize musicSlider;
-@synthesize player, play, playOEIS;
+@synthesize player, play;
 @synthesize instrumentList, instrumentNamesToIndex;
 @synthesize instrumentPicker;
 @synthesize playOptions;
@@ -89,6 +90,9 @@
                  action:@selector(doPlay:)
        forControlEvents:UIControlEventTouchUpInside];
         play.backgroundColor = [UIColor whiteColor];
+        play.layer.borderWidth = 1.0;
+        play.layer.cornerRadius = 3.0;
+        play.layer.borderColor = [UIColor whiteColor].CGColor;
         [soundControlView addSubview:play];
         
         UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc]
@@ -128,23 +132,9 @@
  //       instrumentPicker.layer.cornerRadius = 5.0;
         instrumentPicker.backgroundColor = [UIColor whiteColor];
         [soundControlView addSubview:instrumentPicker];
-        
-        
-        playOEIS = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-        playOEIS.frame = play.frame;
-        SET_VIEW_Y(playOEIS, BELOW(instrumentPicker.frame) + SEP);
-        [playOEIS setTitle:@"▶️" forState:UIControlStateNormal];
-        [playOEIS setTitle:@"॥" forState:UIControlStateSelected];
-        playOEIS.titleLabel.font = [UIFont boldSystemFontOfSize:f.size.height - 8];
-        [playOEIS addTarget:self
-                 action:@selector(doPlayOEIS:)
-       forControlEvents:UIControlEventTouchUpInside];
-        playOEIS.backgroundColor = [UIColor whiteColor];
-        playOEIS.hidden = YES;
-        [soundControlView addSubview:playOEIS];
 
         rateSlider = [[UISlider alloc] initWithFrame:musicSlider.frame];
-        SET_VIEW_Y(rateSlider, playOEIS.frame.origin.y);
+        SET_VIEW_Y(rateSlider, BELOW(instrumentPicker.frame) + SEP);
         rateSlider.minimumValue = 24;   // Larghissimo
         rateSlider.maximumValue = 200;  // Prestissimo
         rateSlider.value = playOptions.beatsPerMinute;
@@ -210,7 +200,9 @@
 //    self.navigationController.navigationBar.opaque = YES;
     self.title = sequence.name;
     player = nil;
-    checkProgressTimer = updatePlayerTimer = nil;
+    checkProgressTimer = nil;
+    lastPlayerChange = nil;
+    recallPlayerChangeTimer = nil;
     
     UIBarButtonItem *leftBarButton = [[UIBarButtonItem alloc]
                                       initWithBarButtonSystemItem:UIBarButtonSystemItemDone
@@ -251,8 +243,9 @@ numberOfRowsInComponent:(NSInteger)component {
              titleForRow:(NSInteger)row
             forComponent:(NSInteger)component {
     NSString *pickedName = [instrumentList objectAtIndex:row];
+    NSString *label = [NSString stringWithFormat:@"%3ld  %@", row+1, pickedName];
 //    NSLog(@"picked instrument %@ at index %ld", pickedName, (long)row);
-    return pickedName;
+    return label;
 }
 
 
@@ -299,10 +292,6 @@ numberOfRowsInComponent:(NSInteger)component {
 
 - (void)longPressPlay:(UILongPressGestureRecognizer*)gesture {
     if (gesture.state == UIGestureRecognizerStateEnded ) {
-        NSLog(@"Long Press");
-        playOEIS.hidden = NO;
-        playOEIS.enabled = NO;
-        [playOEIS setNeedsDisplay];
         NSString *path = [sequence fetchOEISMidiFor:playOptions target:self];
         if (path) { // ready for comparison, do it now
             NSLog(@"OEIS file for %@ already present", sequence.name);
@@ -317,9 +306,7 @@ numberOfRowsInComponent:(NSInteger)component {
 
 - (void) midiFileReady:(NSString *) OEISMidiPath {
     NSLog(@"OEIS file for %@ fetched", sequence.name);
-    playOEIS.hidden = NO;
     [self CheckMIDIMatches:OEISMidiPath];
-    [playOEIS setNeedsDisplay];
 }
 
 - (void) CheckMIDIMatches:(NSString *)OEISMidiPath {
@@ -381,9 +368,11 @@ numberOfRowsInComponent:(NSInteger)component {
                                         ];
         [alert addAction:defaultAction];
         [self presentViewController:alert animated:YES completion:nil];
-
+        play.layer.borderColor = [UIColor redColor].CGColor;
         return;
     }
+    NSLog(@"App and Dave agree on MIDI");
+    play.layer.borderColor = [UIColor blueColor].CGColor;
     return;
 }
 
@@ -461,10 +450,6 @@ numberOfRowsInComponent:(NSInteger)component {
 }
 
 - (void) discardPlayer {
-    if (updatePlayerTimer) {
-        [updatePlayerTimer invalidate];
-        updatePlayerTimer = nil;
-    }
     [self pausePlayer];
     NSLog(@"player discarded");
     player = nil;
@@ -524,8 +509,7 @@ numberOfRowsInComponent:(NSInteger)component {
         NSLog(@"player initialization error: %@", [error localizedDescription]);
         return nil;
     }
-    NSLog(@"Player made, position: %.3f",
-          newPlayer.currentPosition);
+    NSLog(@"New player ...");
     return newPlayer;
 }
 
@@ -537,11 +521,18 @@ numberOfRowsInComponent:(NSInteger)component {
 #define MIN_UPDATE_TIME 0.25     // seconds
 
 - (void) switchToNewPlayer {
-    if (updatePlayerTimer) {    // too soon
-        NSLog(@"switched delayed");
-        updatePlayerTimer.fi
+    NSTimeInterval dt = -[lastPlayerChange timeIntervalSinceNow];
+    if (lastPlayerChange && dt < MIN_UPDATE_TIME) {    // wait a bit
+        NSLog(@"player change too fast, need %.3f seconds", MIN_UPDATE_TIME - dt);
+        recallPlayerChangeTimer = [NSTimer timerWithTimeInterval:MIN_UPDATE_TIME - dt
+                                                                  repeats:NO
+                                                                    block:^(NSTimer * _Nonnull timer) {
+                                                                        [self switchToNewPlayer];
+                                                                    }
+                                            ];
         return;
     }
+    recallPlayerChangeTimer = nil;
     
     float currentPosition = -1;   // >= 0 if we are playing
     if (player) {   // Do we have a current player?
@@ -557,21 +548,15 @@ numberOfRowsInComponent:(NSInteger)component {
         NSLog(@" ** inconceivable, player creation error");
         return;
     }
+    lastPlayerChange = [NSDate date];
     player.currentPosition = currentPosition >= 0 ? currentPosition : 0;
     [self startPlayer];
-    
-    updatePlayerTimer = [NSTimer timerWithTimeInterval:MIN_UPDATE_TIME
-                                                target:self
-                                              selector:@selector(playerUpdateOK:)
-                                              userInfo:nil
-                                               repeats:NO];
 }
 
 - (IBAction)playerUpdateOK:(id)sender {
     NSTimer *caller = (NSTimer *)sender;
     NSLog(@"delayed switch to new player");
     [caller invalidate];
-    updatePlayerTimer = nil;
     [self switchToNewPlayer];
 }
 
@@ -698,9 +683,8 @@ numberOfRowsInComponent:(NSInteger)component {
         if (![bank isEqualToString:@"000"])
             continue;
         // assume all present, and sequential
-        NSString *name = [NSString stringWithFormat:@"%-3lu %@", index+1,
-                          [line substringFromIndex:@"000-000 ".length]];
-        [instrumentList addObject:name];
+        NSString *name = [line substringFromIndex:@"000-000 ".length];
+        [instrumentList addObject:[line substringFromIndex:@"000-000 ".length]];
         [instrumentNamesToIndex setObject:[NSNumber numberWithLong:index++] forKey:name];
     }
     NSLog(@"Instruments read: %lu", (unsigned long)instrumentList.count);
