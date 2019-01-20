@@ -25,13 +25,16 @@
 @property (nonatomic, strong)   UIProgressView *progressView;
 @property (nonatomic, strong)   AVMIDIPlayer *player;
 @property (nonatomic, strong)   UIButton *play;
+@property (nonatomic, strong)   UIButton *playOEIS;
 @property (nonatomic, strong)   NSTimer *checkProgressTimer;
 @property (nonatomic, strong)   NSTimer *updatePlayerTimer;
 @property (nonatomic, strong)   NSMutableArray *instrumentList;
+@property (nonatomic, strong)   NSMutableDictionary *instrumentNamesToIndex;
 @property (nonatomic, strong)   UIPickerView *instrumentPicker;
 @property (nonatomic, strong)   PlayOptions *playOptions;
 @property (nonatomic, strong)   NSOperationQueue *playerOp;
 @property (nonatomic, strong)   UISlider *rateSlider;
+@property (nonatomic, strong)   NSData *MIDIFromOEIS;
 
 @end
 
@@ -42,12 +45,13 @@
 @synthesize progressView;
 @synthesize checkProgressTimer, updatePlayerTimer;
 @synthesize musicSlider;
-@synthesize player, play;
-@synthesize instrumentList;
+@synthesize player, play, playOEIS;
+@synthesize instrumentList, instrumentNamesToIndex;
 @synthesize instrumentPicker;
 @synthesize playOptions;
 @synthesize playerOp;
 @synthesize rateSlider;
+@synthesize MIDIFromOEIS;
 
 - (id)initWithSequence:(Sequence *)s width:(CGFloat) w {
     self = [super init];
@@ -87,6 +91,13 @@
         play.backgroundColor = [UIColor whiteColor];
         [soundControlView addSubview:play];
         
+        UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc]
+                                                   initWithTarget:self
+                                                   action:@selector(longPressPlay:)];
+        longPress.minimumPressDuration = 1.0;
+        [play addGestureRecognizer:longPress];
+
+        
         musicSlider = [[UISlider alloc] initWithFrame:play.frame];
         SET_VIEW_X(musicSlider, RIGHT(play.frame) + 20);
         SET_VIEW_WIDTH(musicSlider, containerView.frame.size.width - musicSlider.frame.origin.x);
@@ -118,11 +129,22 @@
         instrumentPicker.backgroundColor = [UIColor whiteColor];
         [soundControlView addSubview:instrumentPicker];
         
-        rateSlider = [[UISlider alloc] init];
-        f = instrumentPicker.frame;
-        f.origin.y = BELOW(f) + SEP;
-        f.size.height = musicSlider.frame.size.height;
-        rateSlider.frame = f;
+        
+        playOEIS = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+        playOEIS.frame = play.frame;
+        SET_VIEW_Y(playOEIS, BELOW(instrumentPicker.frame) + SEP);
+        [playOEIS setTitle:@"▶️" forState:UIControlStateNormal];
+        [playOEIS setTitle:@"॥" forState:UIControlStateSelected];
+        playOEIS.titleLabel.font = [UIFont boldSystemFontOfSize:f.size.height - 8];
+        [playOEIS addTarget:self
+                 action:@selector(doPlayOEIS:)
+       forControlEvents:UIControlEventTouchUpInside];
+        playOEIS.backgroundColor = [UIColor whiteColor];
+        playOEIS.hidden = YES;
+        [soundControlView addSubview:playOEIS];
+
+        rateSlider = [[UISlider alloc] initWithFrame:musicSlider.frame];
+        SET_VIEW_Y(rateSlider, playOEIS.frame.origin.y);
         rateSlider.minimumValue = 24;   // Larghissimo
         rateSlider.maximumValue = 200;  // Prestissimo
         rateSlider.value = playOptions.beatsPerMinute;
@@ -140,7 +162,7 @@
         [containerView addSubview:soundControlView];
         
         SET_VIEW_HEIGHT(containerView, BELOW(soundControlView.frame));
-        
+
 #ifdef notdef
         if (sequence.plotData) {
             UIImage *plotImage = [UIImage imageWithData:sequence.plotData];
@@ -228,15 +250,18 @@ numberOfRowsInComponent:(NSInteger)component {
 - (NSString *)pickerView:(UIPickerView *)pickerView
              titleForRow:(NSInteger)row
             forComponent:(NSInteger)component {
-    return [instrumentList objectAtIndex:row];
+    NSString *pickedName = [instrumentList objectAtIndex:row];
+//    NSLog(@"picked instrument %@ at index %ld", pickedName, (long)row);
+    return pickedName;
 }
+
 
 - (void)pickerView:(UIPickerView *)pickerView
       didSelectRow:(NSInteger)row
        inComponent:(NSInteger)component {
-    NSLog(@"pickerview selected %ld, %@", (long)row,
-          [instrumentList objectAtIndex:row]);
-    playOptions.instrumentIndex = row;
+    NSString *pickedName = [instrumentList objectAtIndex:row];
+    NSLog(@"Picked instrument %@ at index %ld", pickedName, (long)row);
+    playOptions.instrumentIndex = (int32_t)row;
     [playOptions save];
     [self switchToNewPlayer];
 }
@@ -256,239 +281,117 @@ numberOfRowsInComponent:(NSInteger)component {
     }
 }
 
-- (void) pausePlayer {
-    if (player) {
-        [player stop];
-    }
-    [checkProgressTimer invalidate];
-    checkProgressTimer = nil;
-    play.selected = NO;
-    [play setNeedsDisplay];
-}
-
-- (void) discardPlayer {
-    if (updatePlayerTimer) {
-        [updatePlayerTimer invalidate];
-        updatePlayerTimer = nil;
-    }
-    [self pausePlayer];
-    player = nil;
-}
-
-- (IBAction)doChangePosition:(UIView *)sender {
-    UISlider *view = (UISlider *)sender;
-    player.currentPosition = view.value * player.duration;
-    [self showCurrentPlayingPosition];
-}
-
-- (IBAction)doChangeRate:(UIView *)sender {
-    UISlider *slider = (UISlider *)sender;
-    playOptions.beatsPerMinute = slider.value;
-    [playOptions save];
-    [self switchToNewPlayer];
-}
-
-- (AVMIDIPlayer *) makePlayer { // from current instrument and rate settings
-    OSStatus rc;
-    
-    NSString *bankPath = [[NSBundle mainBundle]
-                          pathForResource:@"GeneralUser GS MuseScore v1.442"
-                          ofType:@"sf2"];
-    if (!bankPath) {
-        NSLog(@"inconceivable, soundsfont file is missing");
-        return nil;
-    }
-    NSURL *bankURL = [NSURL fileURLWithPath:bankPath];
-    
-    MusicSequence s;
-    NewMusicSequence(&s);
-    
-    NSData *newMIDI = [self genMIDI];
-    rc = MusicSequenceFileLoadData (s, (__bridge CFDataRef _Nonnull)(newMIDI),
-                                    0, 0);
-    if (rc) {
-        [self musicError:@"MusicSequenceFileLoadData" err:rc];
-        return nil;
-    }
-    
-    NSError *error;
-    
-    // This uses some 80 MB:
-    AVMIDIPlayer *newPlayer = [[AVMIDIPlayer alloc] initWithData:newMIDI
-                                                    soundBankURL:bankURL
-                                                           error:&error];
-    if (error) {
-        NSLog(@"player initialization error: %@", [error localizedDescription]);
-        return nil;
-    }
-    return newPlayer;
-}
-
-// Generate a new player from current play settings, turn of the old, if any, and
-// fire up the new one in the same place.  Regen the MIDI if necessary.
-//
-// If we do this too fast, the kernel gets upset, so limit the update rate.
-
-#define MIN_UPDATE_TIME 0.3     // seconds
-
-- (void) switchToNewPlayer {
-    if (updatePlayerTimer) {    // too soon
-        return;
-    }
-    AVMIDIPlayer *newPlayer = [self makePlayer];
-    if (!newPlayer) {
-        NSLog(@" ** inconceivable, player creation error");
-        return;
-    }
-    
-    int currentPosition = -1;   // >= 0 if we are playing
-    if (player) {   // Do we have a current player?
-        if (player.playing) {   // if it is playing, stop it
-            currentPosition = player.currentPosition;
-            [self pausePlayer];
-            [player stop];
+- (IBAction)doPlayOEIS:(UIView *)sender {
+    if (!play.selected) {
+        if (!player) {
+            player = [self makePlayer];
         }
-    }
-    player = newPlayer;
-    player.currentPosition = currentPosition >= 0 ? currentPosition : 0;
-    [self pausePlayer];
-    
-    updatePlayerTimer = [NSTimer timerWithTimeInterval:MIN_UPDATE_TIME target:self selector:@selector(playerUpdateOK:) userInfo:nil repeats:NO];
-    
-#ifdef notyet
-    [player prepareToPlay];
-    if (currentPosition >= 0) {
+        if (player.currentPosition >= player.duration) {
+            NSLog(@"reset position to start");
+            player.currentPosition = 0;
+            [self showCurrentPlayingPosition];
+        }
         [self startPlayer];
+    } else {
+        [self pausePlayer];
     }
-#endif
 }
 
-- (IBAction)playerUpdateOK:(id)sender {
-    [checkProgressTimer invalidate];
-    updatePlayerTimer = nil;
-    [self switchToNewPlayer];
+- (void)longPressPlay:(UILongPressGestureRecognizer*)gesture {
+    if (gesture.state == UIGestureRecognizerStateEnded ) {
+        NSLog(@"Long Press");
+        playOEIS.hidden = NO;
+        playOEIS.enabled = NO;
+        [playOEIS setNeedsDisplay];
+        NSString *path = [sequence fetchOEISMidiFor:playOptions target:self];
+        if (path) { // ready for comparison, do it now
+            NSLog(@"OEIS file for %@ already present", sequence.name);
+            [self midiFileReady:path];
+        }   // else await download
+        NSLog(@"fetching OEIS MIDI");
+    }
+    return;
 }
 
-- (void) startPlayer {
-    playerOp = [[NSOperationQueue alloc] init];
-    [playerOp addOperationWithBlock: ^{
-        NSLog(@"start playing: %@, %@", self.player,
-              self.player.playing ? @"playing" : @"not playing");
-        [self.player play:^(void) {
-            NSLog(@"playing complete");
-            dispatch_async(dispatch_get_main_queue(), ^(void) {
-                [self pausePlayer];
-            });
-        }];
-    }];
+// returns here when ready
 
-    [self showCurrentPlayingPosition];
-    play.selected = YES;
-    [play setNeedsDisplay];
-    checkProgressTimer = [NSTimer scheduledTimerWithTimeInterval:1.0
-                                     target:self
-                                   selector:@selector(tick)
-                                   userInfo:nil
-                                    repeats:YES];
+- (void) midiFileReady:(NSString *) OEISMidiPath {
+    NSLog(@"OEIS file for %@ fetched", sequence.name);
+    playOEIS.hidden = NO;
+    [self CheckMIDIMatches:OEISMidiPath];
+    [playOEIS setNeedsDisplay];
 }
 
-- (void) tick {
-    [self showCurrentPlayingPosition];
-}
-
-- (void) showCurrentPlayingPosition {
-    float newValue = self.player.currentPosition/self.player.duration;
-    if (musicSlider.value == newValue)
+- (void) CheckMIDIMatches:(NSString *)OEISMidiPath {
+    MIDIFromOEIS = [NSData dataWithContentsOfFile:OEISMidiPath];
+    if (!MIDIFromOEIS)
         return;
-    musicSlider.value = newValue;
-    [musicSlider setNeedsDisplay];
-}
+    NSString *ourMIDIFile = [self genMIDIToFile];
+    NSData *ourMIDI = [NSData dataWithContentsOfFile:ourMIDIFile];
+    
+    if (MIDIFromOEIS.length != ourMIDI.length || ![ourMIDI isEqualToData:MIDIFromOEIS]) {
+        NSLog(@" *** MIDIs do not match ***");
+        //            if (sequence.midiData.length != myMIDI.length) {
+        //                NSLog(@"midi data length mismatch");
+        //                NSLog(@"David's midi: %lu", (unsigned long)sequence.midiData.length);
+        //                NSLog(@"     My midi: %lu", (unsigned long)myMIDI.length);
+        //           } else {
+        NSString *errors = [NSString stringWithFormat:@"OEIS len: %lu\n"
+                            @" our len: %lu\n"
+                            @"%@\n", (unsigned long)MIDIFromOEIS.length, (unsigned long)ourMIDI.length,
+                            MIDIFromOEIS.length != ourMIDI.length ? @"  ** length mismatch\n" : @""];
+        
+        const u_char *a = ourMIDI.bytes;
+        const u_char *b = MIDIFromOEIS.bytes;
+        NSString *firstMismatch = nil;
+        size_t errCount = 0;
+        for (size_t i=0; i<MIN(ourMIDI.length, MIDIFromOEIS.length); i++)
+            if (a[i] != b[i]) {
+                if (!firstMismatch) {
+                    firstMismatch = [NSString
+                                     stringWithFormat:@"first difference at byte %zul (%zx) of %zul: %02x %02x",
+                                     i, i, ourMIDI.length, b[i], a[i]];
+                    NSLog(@"first difference at byte %zul of %zul", i, ourMIDI.length);
+                }
+                errCount++;
+            }
+        errors = [NSString stringWithFormat:@"%@\n%@\n%zu bytes different\n",
+                  errors, firstMismatch, errCount];
+        
+        for (NSString *line in [errors componentsSeparatedByString:@"\n"])
+            NSLog(@"%@", line);
+        
+        UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"App/OEIS MIDI mismatch"
+                                                                       message:errors
+                                                                preferredStyle:UIAlertControllerStyleAlert];
+        
+        UIAlertAction* mailAction = [UIAlertAction actionWithTitle:@"Mail MIDI files"
+                                                             style:UIAlertActionStyleDefault
+                                                              handler:^(UIAlertAction * action) {
+                                                                  [self mail:OEISMidiPath and:ourMIDIFile errors:errors];
+                                                              }
+                                     ];
+        [alert addAction:mailAction];
 
-long *sequenceArray = 0;
+        UIAlertAction* defaultAction = [UIAlertAction actionWithTitle:@"Dismiss"
+                                                                style:UIAlertActionStyleDefault
+                                                              handler:^(UIAlertAction * action) {
+                                                                  ;
+                                                              }
+                                        ];
+        [alert addAction:defaultAction];
+        [self presentViewController:alert animated:YES completion:nil];
 
-- (long *) makeArray {
-    NSArray *values = [sequence values];
-    sequenceArray = (long *)malloc(sizeof(long)*values.count);
-    assert (sequenceArray);
-    for (size_t i=0; i<values.count; i++) {
-        NSNumber *n = [values objectAtIndex:i];
-        sequenceArray[i] = [n longValue];
+        return;
     }
-    return sequenceArray;
+    return;
 }
 
-- (NSData *) genMIDI {
-    NSString *midiTmp = [NSTemporaryDirectory() stringByAppendingPathComponent:@"midi.tmp"];
-    NSFileManager *mgr = [NSFileManager defaultManager];
-    if (![mgr fileExistsAtPath:midiTmp])
-        [mgr createFileAtPath:midiTmp contents:nil attributes:nil];
-    NSFileHandle *midiFileHandle = [NSFileHandle fileHandleForUpdatingAtPath:midiTmp];
-    
-    NSLog(@"generate MIDI...");
-    long *valueArray = [self makeArray];
-    seqToMidi(midiFileHandle.fileDescriptor, valueArray, sequence.values.count,
-              1, 1, 1,
-              (int)playOptions.beatsPerMinute,
-              0, VOL,
-              (int)playOptions.instrumentIndex + 1, // midi is 1-based
-              VELON, VELOFF,
-              PMOD, POFF, DMOD, DOFF, MAX_VALUES);
-    [midiFileHandle closeFile];
-    free(valueArray);
-    sequenceArray = 0;
-    
-    //    [self mail:midiTmp];
-    
-    NSData *myMIDI = [NSData dataWithContentsOfFile:midiTmp];
-    [mgr removeItemAtPath:midiTmp error:nil];
-
-#ifdef DEBUGGING_MIDI
-    if (sequence.midiData) {
-        if (![myMIDI isEqualToData:sequence.midiData]) {
-            NSLog(@" *** midis do not match ***");
-//            if (sequence.midiData.length != myMIDI.length) {
-//                NSLog(@"midi data length mismatch");
-//                NSLog(@"David's midi: %lu", (unsigned long)sequence.midiData.length);
-//                NSLog(@"     My midi: %lu", (unsigned long)myMIDI.length);
- //           } else {
-                const u_char *a = myMIDI.bytes;
-                const u_char *b = sequence.midiData.bytes;
-                for (size_t i=0; i<myMIDI.length; i++)
-                    if (a[i] != b[i]) {
-                        NSLog(@"first difference at byte %zul of %zul", i, myMIDI.length);
-                        break;
-                    }
- //           }
-        }
-    }
-#endif
-    return myMIDI;
-}
-
-- (void) musicError:(NSString *) mesg err:(OSStatus) rc {
-    switch (rc) {
-        case kAudioToolboxErr_InvalidPlayerState:
-            NSLog(@"%@ failed: bad player state", mesg);
-            break;
-        default:
-            NSLog(@"%@ failed: %d", mesg, (int)rc);
-    }
-}
-
-- (IBAction)doDone:(UISwipeGestureRecognizer *)sender {
-    [self discardPlayer];
-    [self dismissViewControllerAnimated:YES completion:NULL];
-}
-
-- (IBAction)swipeLeft:(UISwipeGestureRecognizer *)sender {
-    [self.navigationController popViewControllerAnimated:YES];
-}
-
-- (void) mail:(NSString *) filePath {
-    NSString *emailTitle = [NSString
-                            stringWithFormat:@"my MIDI file"];
-    
-    NSString *messageBody = [NSString stringWithFormat:@"My midi file"];
+- (void) mail:(NSString *) officialMIDIFile and:(NSString *)appMIDIFile errors:(NSString *)errors {
+    NSString *emailTitle = [NSString stringWithFormat:@"Mismatching MIDI files for %@",
+                            sequence.name];
+    NSString *messageBody = [@"The app's generated MIDI doesn't match David Applegate's MIDI from OEIS.\n"
+                             stringByAppendingString:errors];
     
     MFMailComposeViewController *mc = [[MFMailComposeViewController alloc] init];
     mc.mailComposeDelegate = self;
@@ -496,10 +399,18 @@ long *sequenceArray = 0;
     [mc setToRecipients:[NSArray arrayWithObjects:@"bc@cheswick.com", nil]];
     [mc setMessageBody:messageBody isHTML:NO];
     
-    // Add attachments
-    [mc addAttachmentData:[NSData dataWithContentsOfFile:filePath] mimeType:@"text/plain"
-                 fileName:[filePath lastPathComponent]];
-
+    NSString *officialName = [[[officialMIDIFile lastPathComponent]
+                               stringByDeletingPathExtension]
+                              stringByAppendingPathExtension:@"dat"];
+    [mc addAttachmentData:[NSData dataWithContentsOfFile:officialMIDIFile]
+                 mimeType:@"text/plain"
+                 fileName:officialName];
+    
+    NSString *ourName = [@"ShowSeq-" stringByAppendingString: officialName];
+    [mc addAttachmentData:[NSData dataWithContentsOfFile:appMIDIFile]
+                 mimeType:@"text/plain"
+                 fileName:ourName];
+    
     // Present mail view controller on screen
     [self presentViewController:mc animated:YES completion:NULL];
 }
@@ -538,6 +449,218 @@ long *sequenceArray = 0;
     [self dismissViewControllerAnimated:YES completion:NULL];
 }
 
+- (void) pausePlayer {
+    if (player) {
+        NSLog(@" paused at %.3f", player.currentPosition);
+        [player stop];
+    }
+    [checkProgressTimer invalidate];
+    checkProgressTimer = nil;
+    play.selected = NO;
+    [play setNeedsDisplay];
+}
+
+- (void) discardPlayer {
+    if (updatePlayerTimer) {
+        [updatePlayerTimer invalidate];
+        updatePlayerTimer = nil;
+    }
+    [self pausePlayer];
+    NSLog(@"player discarded");
+    player = nil;
+}
+
+- (IBAction)doChangePosition:(UIView *)sender {
+    UISlider *view = (UISlider *)sender;
+    float newPosition = view.value * player.duration;
+    if (player.currentPosition == newPosition)
+        return;
+    player.currentPosition = newPosition;
+    NSLog(@"current position set to %.3f", player.currentPosition);
+    [self showCurrentPlayingPosition];
+}
+
+- (IBAction)doChangeRate:(UIView *)sender {
+    UISlider *slider = (UISlider *)sender;
+    playOptions.beatsPerMinute = slider.value;
+    [playOptions save];
+    NSLog(@"new rate: %d bpm", playOptions.beatsPerMinute);
+    [self switchToNewPlayer];
+}
+
+- (AVMIDIPlayer *) makePlayer { // from current instrument and rate settings
+    OSStatus rc;
+    
+    NSString *bankPath = [[NSBundle mainBundle]
+                          pathForResource:@"GeneralUser GS MuseScore v1.442"
+                          ofType:@"sf2"];
+    if (!bankPath) {
+        NSLog(@"inconceivable, soundsfont file is missing");
+        return nil;
+    }
+    NSURL *bankURL = [NSURL fileURLWithPath:bankPath];
+    
+    MusicSequence s;
+    NewMusicSequence(&s);
+    
+    NSString *midiTmp = [self genMIDIToFile];
+    NSData *newMIDI = [NSData dataWithContentsOfFile:midiTmp];
+    [[NSFileManager defaultManager] removeItemAtPath:midiTmp error:nil];
+
+    rc = MusicSequenceFileLoadData (s, (__bridge CFDataRef _Nonnull)(newMIDI),
+                                    0, 0);
+    if (rc) {
+        [self musicError:@"MusicSequenceFileLoadData" err:rc];
+        return nil;
+    }
+    
+    NSError *error;
+    
+    // This uses some 80 MB:
+    AVMIDIPlayer *newPlayer = [[AVMIDIPlayer alloc] initWithData:newMIDI
+                                                    soundBankURL:bankURL
+                                                           error:&error];
+    if (error) {
+        NSLog(@"player initialization error: %@", [error localizedDescription]);
+        return nil;
+    }
+    NSLog(@"Player made, position: %.3f",
+          newPlayer.currentPosition);
+    return newPlayer;
+}
+
+// Generate a new player from current play settings, turn of the old, if any, and
+// fire up the new one in the same place.  Regen the MIDI if necessary.
+//
+// If we do this too fast, the kernel gets upset, so limit the update rate.
+
+#define MIN_UPDATE_TIME 0.25     // seconds
+
+- (void) switchToNewPlayer {
+    if (updatePlayerTimer) {    // too soon
+        NSLog(@"switched delayed");
+        updatePlayerTimer.fi
+        return;
+    }
+    
+    float currentPosition = -1;   // >= 0 if we are playing
+    if (player) {   // Do we have a current player?
+        if (player.playing) {   // if it is playing, stop it
+            currentPosition = player.currentPosition;
+            [self pausePlayer];
+            [player stop];
+        }
+    }
+    
+    player = [self makePlayer];
+    if (!player) {
+        NSLog(@" ** inconceivable, player creation error");
+        return;
+    }
+    player.currentPosition = currentPosition >= 0 ? currentPosition : 0;
+    [self startPlayer];
+    
+    updatePlayerTimer = [NSTimer timerWithTimeInterval:MIN_UPDATE_TIME
+                                                target:self
+                                              selector:@selector(playerUpdateOK:)
+                                              userInfo:nil
+                                               repeats:NO];
+}
+
+- (IBAction)playerUpdateOK:(id)sender {
+    NSTimer *caller = (NSTimer *)sender;
+    NSLog(@"delayed switch to new player");
+    [caller invalidate];
+    updatePlayerTimer = nil;
+    [self switchToNewPlayer];
+}
+
+- (void) startPlayer {
+    playerOp = [[NSOperationQueue alloc] init];
+    [playerOp addOperationWithBlock: ^{
+        NSLog(@"start/resume playing at %.3f", self.player.currentPosition);
+        [self.player play:^(void) {
+            //            NSLog(@"playing complete");
+            //            dispatch_async(dispatch_get_main_queue(), ^(void) {
+            //                [self pausePlayer];
+        }];
+    }];
+    
+    [self showCurrentPlayingPosition];
+    self.play.selected = YES;
+    [self.play setNeedsDisplay];
+    self.checkProgressTimer = [NSTimer scheduledTimerWithTimeInterval:1.0
+                                                               target:self
+                                                             selector:@selector(tick)
+                                                             userInfo:nil
+                                                              repeats:YES];
+}
+
+- (void) tick {
+    [self showCurrentPlayingPosition];
+}
+
+- (void) showCurrentPlayingPosition {
+    float newValue = self.player.currentPosition/self.player.duration;
+    if (musicSlider.value == newValue)
+        return;
+    musicSlider.value = newValue;
+    [musicSlider setNeedsDisplay];
+}
+
+- (long *) makeArray {
+    static long *sequenceArray = 0;
+    NSArray *values = [sequence values];
+    sequenceArray = (long *)malloc(sizeof(long)*values.count);
+    assert (sequenceArray);
+    for (size_t i=0; i<values.count; i++) {
+        NSNumber *n = [values objectAtIndex:i];
+        sequenceArray[i] = [n longValue];
+    }
+    return sequenceArray;
+}
+
+- (NSString *) genMIDIToFile {
+    NSString *midiTmp = [NSTemporaryDirectory() stringByAppendingPathComponent:@"midi.tmp"];
+    NSFileManager *mgr = [NSFileManager defaultManager];
+    if (![mgr fileExistsAtPath:midiTmp])
+        [mgr createFileAtPath:midiTmp contents:nil attributes:nil];
+    NSFileHandle *midiFileHandle = [NSFileHandle fileHandleForUpdatingAtPath:midiTmp];
+    
+    long *valueArray = [self makeArray];
+    [playOptions dump:@"generate MIDI with options"];
+    seqToMidi(midiFileHandle.fileDescriptor, valueArray, sequence.values.count,
+              1, 1, 1,
+              (int)playOptions.beatsPerMinute,
+              0, VOL,
+              (int)playOptions.instrumentIndex,
+              VELON, VELOFF,
+              PMOD, POFF, DMOD, DOFF, MAX_VALUES);
+    [midiFileHandle closeFile];
+    free(valueArray);
+    valueArray = 0;
+    return midiTmp;
+}
+
+- (void) musicError:(NSString *) mesg err:(OSStatus) rc {
+    switch (rc) {
+        case kAudioToolboxErr_InvalidPlayerState:
+            NSLog(@"%@ failed: bad player state", mesg);
+            break;
+        default:
+            NSLog(@"%@ failed: %d", mesg, (int)rc);
+    }
+}
+
+- (IBAction)doDone:(UISwipeGestureRecognizer *)sender {
+    [self discardPlayer];
+    [self dismissViewControllerAnimated:YES completion:NULL];
+}
+
+- (IBAction)swipeLeft:(UISwipeGestureRecognizer *)sender {
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
 - (void) loadInstruments {
     NSString *instrumentPath = [[NSBundle mainBundle]
                                 pathForResource:@"InstrumentList"ofType:@""];
@@ -555,6 +678,7 @@ long *sequenceArray = 0;
         return;
     }
     instrumentList = [[NSMutableArray alloc] init];
+    instrumentNamesToIndex = [[NSMutableDictionary alloc] init];
     
     // Entries look like this:
     //    # from echo "inst 1" | fluidsynth "GeneralUser GS MuseScore v1.442.sf2"
@@ -566,6 +690,7 @@ long *sequenceArray = 0;
         NSLog(@"instrumentFileContents list is empty");
         return;
     }
+    size_t index = 0;
     for (NSString *line in lines) {
         if ([line hasPrefix:@"#"] || line.length == 0)
             continue;
@@ -573,8 +698,10 @@ long *sequenceArray = 0;
         if (![bank isEqualToString:@"000"])
             continue;
         // assume all present, and sequential
-        NSString *name = [line substringFromIndex:@"000-000 ".length];
+        NSString *name = [NSString stringWithFormat:@"%-3lu %@", index+1,
+                          [line substringFromIndex:@"000-000 ".length]];
         [instrumentList addObject:name];
+        [instrumentNamesToIndex setObject:[NSNumber numberWithLong:index++] forKey:name];
     }
     NSLog(@"Instruments read: %lu", (unsigned long)instrumentList.count);
 }

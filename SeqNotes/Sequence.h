@@ -9,14 +9,19 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
+#import "PlayOptions.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @class Sequence;
-@protocol sequenceProtocol <NSObject>
 
+@protocol sequenceProtocol <NSObject>
 - (void) addSequence: (Sequence *)sequence;
 - (void) valuesFetchedForSequence:(Sequence *)sequence;
+@end
 
+@protocol midiSequenceProtocol <NSObject>
+- (void) midiFileReady:(NSString *) midiFile;
 @end
 
 @interface Sequence : NSObject {
@@ -24,12 +29,14 @@ NS_ASSUME_NONNULL_BEGIN
     NSString *shortTitle, *shortComment;    // manual, from startup file
     BOOL valuesUnavailable;
     id<sequenceProtocol> target;
+    id<midiSequenceProtocol> MIDItarget;
 }
 
 @property (nonatomic, strong)   NSString *name, *title, *description;
 @property (nonatomic, strong)   NSString *shortTitle, *shortComment;
 @property (assign)              BOOL valuesUnavailable;
 @property (nonatomic, strong)   id<sequenceProtocol> target;
+@property (nonatomic, strong)   id<midiSequenceProtocol> MIDItarget;
 
 - (id)initSequence: (NSString *)seq;
 - (void) loadBasicDataFromOEIS:(id<sequenceProtocol>)caller;
@@ -46,7 +53,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL) havePlots;
 - (BOOL) haveValues;
-- (BOOL) haveDavidMidi; // Applegate's MIDI from OEIS, for debugging our stuff
+- (NSString *) fetchOEISMidiFor:(PlayOptions *)options
+                        target:(id<midiSequenceProtocol>)caller;
 
 - (NSArray *) values;
 

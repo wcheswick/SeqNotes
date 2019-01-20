@@ -363,7 +363,6 @@ static NSString * const reuseIdentifier = @"Cell";
                                   forIndexPath:indexPath];
     SeqThumbView *thumbView = [seqThumbViews objectAtIndex:indexPath.row];
     [cell addSubview:thumbView];
-    NSLog(@" collection %@", thumbView.sequence.name);
     return cell;
 }
 

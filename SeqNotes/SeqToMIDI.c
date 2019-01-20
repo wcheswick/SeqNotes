@@ -135,7 +135,7 @@ seqToMidi(int ofd, long sequence[], size_t seqLen,
     if (bpm <= 0 || bpm >= 1000000) bpm=100;
     if (!name || !strlen(name)) name="Piano\\";
     if (vol <= 0 || vol > 127) vol=100;
-    if (voice <= 0 || voice >= 129) voice=1;
+    if (voice <= 0 || voice >= 129) voice=1; // XXX need actual max
     if (velon <= 0 || velon >= 128) velon = 80;
     if (veloff <= 0 || veloff >= 128) veloff = 80;
     if (pmod <= 0 || pmod > 128) pmod=88;
@@ -199,8 +199,8 @@ seqToMidi(int ofd, long sequence[], size_t seqLen,
             char buf[10];
             snprintf(buf, sizeof(buf), "%ld", s);
             for (j=0; j<strlen(buf); j++) {
-                p = (p*10 + buf[j]) % pmod;
-                d = (d*10 + buf[j]) % dmod;
+                p = (p*10 + buf[j] - '0') % pmod;
+                d = (d*10 + buf[j] - '0') % dmod;
             }
             // There, that wasn't so bad, was it?
             if (neg) {
@@ -209,8 +209,11 @@ seqToMidi(int ofd, long sequence[], size_t seqLen,
             }
             p += poff;
             d += doff;
+            int x = 120*(1<<d);
+//            NSLog(@"p=% d=%d  velon=%d x=%d veloff=%d",
+//                  p, d, velon, x, veloff);
             emit_var(0); emit_char(156); emit_char(p); emit_char(velon);
-            emit_var(120*(1<<d)); emit_char(140); emit_char(p); emit_char(veloff);
+            emit_var(x); emit_char(140); emit_char(p); emit_char(veloff);
         }
     }
     if (dotrk) {

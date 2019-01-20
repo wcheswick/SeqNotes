@@ -6,16 +6,18 @@
 //  Copyright © 2018 Cheswick.com. All rights reserved.
 //
 
+
 #import "SeqToMIDI.h"
 #import "Sequence.h"
 #import "Defines.h"
+
 
 @implementation Sequence
 
 @synthesize name, title, description;
 @synthesize shortTitle, shortComment;
 @synthesize valuesUnavailable;
-@synthesize target;
+@synthesize target, MIDItarget;
 
 - (id)initSequence: (NSString *)s {
     self = [super init];
@@ -26,6 +28,7 @@
         description = nil;
         valuesUnavailable = NO;
         target = nil;
+        MIDItarget = nil;
     }
     return self;
 }
@@ -150,16 +153,18 @@
     return [NSString stringWithFormat:@"./%@-values.archive", name];
 }
 
+- (NSString *) pathToMIDIWithOptions:(PlayOptions *) options {
+    return [NSString stringWithFormat:@"./%@-midi-for-%d-%d-%d",
+            name, options.instrumentIndex, options.beatsPerMinute,
+            options.maxLength];
+}
+
 - (BOOL) havePlots {
     return [[NSFileManager defaultManager] fileExistsAtPath:[self pathToPlotData]];
 }
 
 - (BOOL) haveValues {
     return [[NSFileManager defaultManager] fileExistsAtPath:[self pathToValues]];
-}
-
-- (BOOL) haveDavidMidi {
-    return NO;
 }
 
 - (NSArray *) values {
@@ -233,28 +238,37 @@
     return nil;
 }
 
-#ifdef notdef   // debugging, to compare with David Applegate's results XXXXX
-- (void) fetchMIDI {
+- (NSString *)fetchOEISMidiFor:(PlayOptions *)options
+                        target:(id<midiSequenceProtocol>)caller {
+    NSString *midiPath = [self pathToMIDIWithOptions:options];
+    if (NO && [[NSFileManager defaultManager] fileExistsAtPath:midiPath]) {
+        NSLog(@"** returning cached OEIS MIDI");
+        return midiPath;
+    }
+    
+    MIDItarget = caller;
     NSMutableData *body = [NSMutableData data];
-    NSString *davesParams = [NSString stringWithFormat:@"midi=1&SAVE=SAVE&seq=%@&bpm=100&vol=100&voice=%d&velon=80&veloff=80&pmod=88&poff=20&dmod=1&doff=0&cutoff=%d\n",
-                             name, VOICE, MAX_VALUES];
+    NSString *davesParams = [NSString stringWithFormat:@"midi=1&SAVE=SAVE&seq=%@&bpm=%d&vol=100&voice=%d&velon=80&veloff=80&pmod=88&poff=20&dmod=1&doff=0&cutoff=%d\n",
+                             name, options.beatsPerMinute, options.instrumentIndex, MAX_VALUES];
     NSString *appParams  = [NSString stringWithFormat:@"midi=1&SAVE=SAVE&seq=%@&bpm=%d&vol=%d&voice=%d&velon=%d&veloff=%d&pmod=%d&poff=%d&dmod=%d&doff=%d&cutoff=%d\n",
-                           name, BPM, VOL, VOICE, VELON, VELOFF, PMOD, POFF, DMOD, DOFF, MAX_VALUES];
+                            name, options.beatsPerMinute, VOL,
+                            options.instrumentIndex, VELON, VELOFF, PMOD, POFF, DMOD, DOFF,
+                            options.maxLength];
     
     if (![davesParams isEqualToString:appParams]) {
         NSLog(@"%@", davesParams);
         NSLog(@"%@", appParams);
         NSLog(@"param generations not right yet");
     }
+    [options dump: @"dave's params"];
+    NSLog(@"dave's params: %@", davesParams);
     [body appendData:[davesParams
                       dataUsingEncoding:NSUTF8StringEncoding]];
     
-    midiData = [[NSMutableData alloc] init];
-
     NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
     config.timeoutIntervalForRequest = 30;
     config.HTTPCookieAcceptPolicy = NO;
-//    config.URLCache = NSURLRequestUseProtocolCachePolicy;
+    //    config.URLCache = NSURLRequestUseProtocolCachePolicy;
     NSURLSession *session = [NSURLSession sessionWithConfiguration:config];
     NSString *midiUrl = [NSString stringWithFormat:@"https://oeis.org/play?seq=%@", name];
     
@@ -272,8 +286,10 @@
                  completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
                      NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *) response;
                      if ((httpResponse.statusCode / 100) == 2) {
-                         self->midiData = data;
-                         [self downloadComplete];
+                         [data writeToFile:midiPath atomically:YES];
+                         dispatch_async(dispatch_get_main_queue(), ^(void){
+                             [self->MIDItarget midiFileReady:midiPath];
+                         });
                      } else {
                          NSCharacterSet *trim = [NSCharacterSet characterSetWithCharactersInString:@"\r\n"];
                          NSString *detail = [[[[NSString alloc]
@@ -286,6 +302,15 @@
                      }
                  }];
     [uploadTask resume];
+    return nil; // no answer available yet
+}
+
+#ifdef notdef   // debugging, to compare with David Applegate's results XXXXX
+#define BPM     100
+#define VOICE   ALTOSAX
+#define CUTOFF  4096
+
+- (void) fetchMIDI {
 }
 #endif
 

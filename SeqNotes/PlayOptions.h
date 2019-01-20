@@ -11,14 +11,17 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface PlayOptions : NSObject {
-    long beatsPerMinute;
-    long instrumentIndex;
+    int32_t beatsPerMinute;
+    int32_t instrumentIndex;    // starts at zero
+    int32_t maxLength;
 }
 
-@property (assign)  long beatsPerMinute;
-@property (assign)  long instrumentIndex;
+@property (assign)  int32_t beatsPerMinute;
+@property (assign)  int32_t instrumentIndex;
+@property (assign)  int32_t maxLength;
 
 - (void) save;
+- (void) dump: (NSString *) title;
 
 @end
 
