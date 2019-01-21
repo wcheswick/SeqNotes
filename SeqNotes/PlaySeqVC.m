@@ -21,7 +21,7 @@
 @property (nonatomic, strong)   Sequence *sequence;
 @property (nonatomic, strong)   UIView *containerView;
 @property (nonatomic, strong)   UIScrollView *scrollView;
-@property (nonatomic, strong)   UISlider *musicSlider;
+@property (nonatomic, strong)   PositionView *positionView;
 @property (nonatomic, strong)   UIProgressView *progressView;
 @property (nonatomic, strong)   AVMIDIPlayer *player;
 @property (nonatomic, strong)   UIButton *play;
@@ -44,8 +44,8 @@
 @synthesize containerView, scrollView;
 @synthesize progressView;
 @synthesize checkProgressTimer, lastPlayerChange;
+@synthesize positionView;
 @synthesize recallPlayerChangeTimer;
-@synthesize musicSlider;
 @synthesize player, play;
 @synthesize instrumentList, instrumentNamesToIndex;
 @synthesize instrumentPicker;
@@ -73,16 +73,17 @@
         containerView.backgroundColor = [UIColor yellowColor];
         
         UIView *soundControlView = [[UIView alloc] init];
-        soundControlView.frame = CGRectMake(0, 0, containerView.frame.size.width, LATER);
+        soundControlView.frame = CGRectMake(0, 0, containerView.frame.size.width, 2*LARGE_H - 2);
         soundControlView.userInteractionEnabled = YES;
+        soundControlView.backgroundColor = [UIColor whiteColor];
         
         play = [UIButton buttonWithType:UIButtonTypeRoundedRect];
         CGRect f;
-        f.origin.x = 0;
-        f.size.height = 2*LARGE_H - 2;
-        f.origin.y = 2;
+        f.origin = CGPointMake(0, 0);
+        f.size.height = soundControlView.frame.size.height;
         f.size.width = f.size.height*1.4;
         play.frame = f;
+        f.origin.x = RIGHT(f) + 20;
         [play setTitle:@"▶️" forState:UIControlStateNormal];
         [play setTitle:@"॥" forState:UIControlStateSelected];
         play.titleLabel.font = [UIFont boldSystemFontOfSize:f.size.height - 8];
@@ -101,29 +102,16 @@
         longPress.minimumPressDuration = 1.0;
         [play addGestureRecognizer:longPress];
 
-        
-        musicSlider = [[UISlider alloc] initWithFrame:play.frame];
-        SET_VIEW_X(musicSlider, RIGHT(play.frame) + 20);
-        SET_VIEW_WIDTH(musicSlider, containerView.frame.size.width - musicSlider.frame.origin.x);
-        musicSlider.minimumValue = 0.0;
-        musicSlider.maximumValue = 1.0;
-        [musicSlider addTarget:self action:@selector(doChangePosition:) forControlEvents:UIControlEventValueChanged];
-        UIImage *smallNote = [UIImage imageWithContentsOfFile:[[NSBundle mainBundle]
-                                                               pathForResource:@"smallnote"
-                                                               ofType:@"png"]];
-        UIImage *scaledImage = [UIImage imageWithCGImage:smallNote.CGImage
-                                                   scale:10 //(smallNote.scale * f.size.height/smallNote.size.height)
-                                             orientation:(smallNote.imageOrientation)];
-        [musicSlider setThumbImage:scaledImage forState:UIControlStateNormal];
-        musicSlider.backgroundColor = [UIColor whiteColor];
-//        musicSlider.layer.borderWidth = 1.0;
-//        musicSlider.layer.borderColor = [UIColor redColor].CGColor;
-//        musicSlider.layer.cornerRadius = 5.0;
-        [soundControlView addSubview:musicSlider];
-        
+        f.size.width = soundControlView.frame.size.width - f.origin.x;
+        f.size.height = play.frame.size.height;
+        positionView = [[PositionView alloc] initWithFrame:f];
+        positionView.target = self;
+        positionView.backgroundColor = [UIColor greenColor];
+        [soundControlView addSubview:positionView];
+
         // The picker chooses its own height
         instrumentPicker = [[UIPickerView alloc] init];
-        SET_VIEW_Y(instrumentPicker, BELOW(musicSlider.frame));
+        SET_VIEW_Y(instrumentPicker, BELOW(soundControlView.frame));
         SET_VIEW_X(instrumentPicker, (containerView.frame.size.width - instrumentPicker.frame.size.width)/2.0);
         instrumentPicker.delegate = self;
         [instrumentPicker selectRow:playOptions.instrumentIndex inComponent:0 animated:NO];
@@ -133,7 +121,7 @@
         instrumentPicker.backgroundColor = [UIColor whiteColor];
         [soundControlView addSubview:instrumentPicker];
 
-        rateSlider = [[UISlider alloc] initWithFrame:musicSlider.frame];
+        rateSlider = [[UISlider alloc] initWithFrame:soundControlView.frame];
         SET_VIEW_Y(rateSlider, BELOW(instrumentPicker.frame) + SEP);
         rateSlider.minimumValue = 24;   // Larghissimo
         rateSlider.maximumValue = 200;  // Prestissimo
@@ -145,7 +133,7 @@
         [soundControlView addSubview:rateSlider];
 
         SET_VIEW_HEIGHT(soundControlView, BELOW(rateSlider.frame));
-        soundControlView.backgroundColor = [UIColor whiteColor];
+//        soundControlView.backgroundColor = [UIColor whiteColor];
 //        soundControlView.layer.borderWidth = 0.5;
 //        soundControlView.layer.borderColor = [UIColor blueColor].CGColor;
  //       soundControlView.layer.cornerRadius = 5.0;
@@ -247,7 +235,6 @@ numberOfRowsInComponent:(NSInteger)component {
 //    NSLog(@"picked instrument %@ at index %ld", pickedName, (long)row);
     return label;
 }
-
 
 - (void)pickerView:(UIPickerView *)pickerView
       didSelectRow:(NSInteger)row
@@ -455,9 +442,7 @@ numberOfRowsInComponent:(NSInteger)component {
     player = nil;
 }
 
-- (IBAction)doChangePosition:(UIView *)sender {
-    UISlider *view = (UISlider *)sender;
-    float newPosition = view.value * player.duration;
+- (void) newPosition:(float) newPosition {
     if (player.currentPosition == newPosition)
         return;
     player.currentPosition = newPosition;
@@ -561,6 +546,8 @@ numberOfRowsInComponent:(NSInteger)component {
 }
 
 - (void) startPlayer {
+    positionView.duration = player.duration;
+    positionView.position = player.currentPosition;
     playerOp = [[NSOperationQueue alloc] init];
     [playerOp addOperationWithBlock: ^{
         NSLog(@"start/resume playing at %.3f", self.player.currentPosition);
@@ -586,11 +573,7 @@ numberOfRowsInComponent:(NSInteger)component {
 }
 
 - (void) showCurrentPlayingPosition {
-    float newValue = self.player.currentPosition/self.player.duration;
-    if (musicSlider.value == newValue)
-        return;
-    musicSlider.value = newValue;
-    [musicSlider setNeedsDisplay];
+    positionView.position = self.player.currentPosition;
 }
 
 - (long *) makeArray {

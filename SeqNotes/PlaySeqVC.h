@@ -8,6 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import "Sequence.h"
+#import "PositionView.h"
 
 #import <MessageUI/MessageUI.h>
 
@@ -18,6 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
     MFMailComposeViewControllerDelegate,
     UIPickerViewDataSource,
     UIPickerViewDelegate,
+    PositionProtocol,
     midiSequenceProtocol>
 
 - (id)initWithSequence:(Sequence *)s width:(CGFloat) w;

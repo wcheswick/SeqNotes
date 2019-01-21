@@ -10,12 +10,14 @@
 		FB08BDA521D13D9D009307AA /* ear.jpg in Resources */ = {isa = PBXBuildFile; fileRef = FB08BDA421D13D9D009307AA /* ear.jpg */; };
 		FB12FDE121E0FB1E00029195 /* ShowPlotVC.m in Sources */ = {isa = PBXBuildFile; fileRef = FB12FDE021E0FB1E00029195 /* ShowPlotVC.m */; };
 		FB340FB821CBCD2500126A3C /* SeqToMIDI.c in Sources */ = {isa = PBXBuildFile; fileRef = FB340FB721CBCD2500126A3C /* SeqToMIDI.c */; };
-		FB340FBE21CC2A6300126A3C /* smallnote.png in Resources */ = {isa = PBXBuildFile; fileRef = FB340FBD21CC2A6300126A3C /* smallnote.png */; };
 		FB36C5C621C6D451004E7EFE /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FB36C5C521C6D451004E7EFE /* CoreAudio.framework */; };
 		FB36C5C821C6D464004E7EFE /* CoreMIDI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FB36C5C721C6D464004E7EFE /* CoreMIDI.framework */; };
 		FB36C5CA21C6D471004E7EFE /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FB36C5C921C6D471004E7EFE /* AudioToolbox.framework */; };
 		FB36C5D721CAE5F5004E7EFE /* GeneralUser GS MuseScore v1.442.sf2 in Resources */ = {isa = PBXBuildFile; fileRef = FB36C5D621CAE5F5004E7EFE /* GeneralUser GS MuseScore v1.442.sf2 */; };
 		FB36C5DB21CAFB33004E7EFE /* InstrumentList in Resources */ = {isa = PBXBuildFile; fileRef = FB36C5DA21CAFB33004E7EFE /* InstrumentList */; };
+		FB3C268021F6080300EE144D /* PositionView.m in Sources */ = {isa = PBXBuildFile; fileRef = FB3C267F21F6080300EE144D /* PositionView.m */; };
+		FB3C268221F612BF00EE144D /* rightnote.png in Resources */ = {isa = PBXBuildFile; fileRef = FB3C268121F612BF00EE144D /* rightnote.png */; };
+		FB3C268421F612C400EE144D /* leftnote.png in Resources */ = {isa = PBXBuildFile; fileRef = FB3C268321F612C400EE144D /* leftnote.png */; };
 		FB99420C21C58B0C009A30E4 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = FB99420B21C58B0C009A30E4 /* main.m */; };
 		FB99421421C58B74009A30E4 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = FB99421221C58B74009A30E4 /* AppDelegate.m */; };
 		FB99421C21C58B89009A30E4 /* BrowseOEISVC.m in Sources */ = {isa = PBXBuildFile; fileRef = FB99421A21C58B89009A30E4 /* BrowseOEISVC.m */; };
@@ -37,7 +39,6 @@
 		FB340FB721CBCD2500126A3C /* SeqToMIDI.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SeqToMIDI.c; sourceTree = "<group>"; };
 		FB340FBB21CC266100126A3C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		FB340FBC21CC266500126A3C /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
-		FB340FBD21CC2A6300126A3C /* smallnote.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = smallnote.png; sourceTree = "<group>"; };
 		FB340FC421CC3BC800126A3C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		FB340FC521CC3BDD00126A3C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		FB36C5C521C6D451004E7EFE /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = System/Library/Frameworks/CoreAudio.framework; sourceTree = SDKROOT; };
@@ -45,6 +46,10 @@
 		FB36C5C921C6D471004E7EFE /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		FB36C5D621CAE5F5004E7EFE /* GeneralUser GS MuseScore v1.442.sf2 */ = {isa = PBXFileReference; lastKnownFileType = file; path = "GeneralUser GS MuseScore v1.442.sf2"; sourceTree = "<group>"; };
 		FB36C5DA21CAFB33004E7EFE /* InstrumentList */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = InstrumentList; sourceTree = "<group>"; };
+		FB3C267E21F6080300EE144D /* PositionView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PositionView.h; sourceTree = "<group>"; };
+		FB3C267F21F6080300EE144D /* PositionView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PositionView.m; sourceTree = "<group>"; };
+		FB3C268121F612BF00EE144D /* rightnote.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = rightnote.png; sourceTree = "<group>"; };
+		FB3C268321F612C400EE144D /* leftnote.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = leftnote.png; sourceTree = "<group>"; };
 		FB9941F621C58B0B009A30E4 /* SeqNotes.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SeqNotes.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FB99420B21C58B0C009A30E4 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		FB99421221C58B74009A30E4 /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -85,6 +90,8 @@
 		FB08BDA321D13D8B009307AA /* Support files */ = {
 			isa = PBXGroup;
 			children = (
+				FB3C268121F612BF00EE144D /* rightnote.png */,
+				FB3C268321F612C400EE144D /* leftnote.png */,
 				FB08BDA421D13D9D009307AA /* ear.jpg */,
 			);
 			path = "Support files";
@@ -152,6 +159,8 @@
 				FBEBED3F21CD364000D41433 /* PlayOptions.h */,
 				FBEBED4021CD364000D41433 /* PlayOptions.m */,
 				FB99421921C58B89009A30E4 /* BrowseOEISVC.h */,
+				FB3C267E21F6080300EE144D /* PositionView.h */,
+				FB3C267F21F6080300EE144D /* PositionView.m */,
 				FB99421A21C58B89009A30E4 /* BrowseOEISVC.m */,
 				FB99422421C58B9E009A30E4 /* Sequence.h */,
 				FB99422621C58B9E009A30E4 /* Sequence.m */,
@@ -161,7 +170,6 @@
 				FB99422921C58B9E009A30E4 /* UICircularProgressView.m */,
 				FB99420B21C58B0C009A30E4 /* main.m */,
 				FB340FBB21CC266100126A3C /* Info.plist */,
-				FB340FBD21CC2A6300126A3C /* smallnote.png */,
 				FB340FBC21CC266500126A3C /* Default-568h@2x.png */,
 				FB340FC521CC3BDD00126A3C /* Assets.xcassets */,
 				FB340FC221CC3BC800126A3C /* Base.lproj */,
@@ -237,8 +245,9 @@
 				FBEBED3E21CD319600D41433 /* Assets.xcassets in Resources */,
 				FBEBED3D21CD2AF000D41433 /* Music.txt in Resources */,
 				FB36C5DB21CAFB33004E7EFE /* InstrumentList in Resources */,
+				FB3C268421F612C400EE144D /* leftnote.png in Resources */,
 				FB36C5D721CAE5F5004E7EFE /* GeneralUser GS MuseScore v1.442.sf2 in Resources */,
-				FB340FBE21CC2A6300126A3C /* smallnote.png in Resources */,
+				FB3C268221F612BF00EE144D /* rightnote.png in Resources */,
 				FB08BDA521D13D9D009307AA /* ear.jpg in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -259,6 +268,7 @@
 				FBDC07A521CD8CA000A7F0FF /* SeqThumbView.m in Sources */,
 				FB99421421C58B74009A30E4 /* AppDelegate.m in Sources */,
 				FBEBED4421CD864400D41433 /* MainVC.m in Sources */,
+				FB3C268021F6080300EE144D /* PositionView.m in Sources */,
 				FBEBED4121CD364000D41433 /* PlayOptions.m in Sources */,
 				FB99420C21C58B0C009A30E4 /* main.m in Sources */,
 			);
