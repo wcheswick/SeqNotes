@@ -35,6 +35,7 @@
 @property (nonatomic, strong)   UISlider *rateSlider;
 @property (nonatomic, strong)   NSData *MIDIFromOEIS;
 @property (nonatomic, strong)   NSTimer *recallPlayerChangeTimer;
+@property (nonatomic, strong)   UILabel *rateLabel;
 
 @end
 
@@ -52,6 +53,7 @@
 @synthesize playOptions;
 @synthesize playerOp;
 @synthesize rateSlider;
+@synthesize rateLabel;
 @synthesize MIDIFromOEIS;
 
 - (id)initWithSequence:(Sequence *)s width:(CGFloat) w {
@@ -70,7 +72,7 @@
         
         containerView = [[UIView alloc]
                          initWithFrame:CGRectMake(INSET, INSET, w - 2*INSET, LATER)];
-        containerView.backgroundColor = [UIColor yellowColor];
+        containerView.backgroundColor = [UIColor whiteColor];
         
         UIView *soundControlView = [[UIView alloc] init];
         soundControlView.frame = CGRectMake(0, 0, containerView.frame.size.width, 2*LARGE_H - 2);
@@ -121,22 +123,34 @@
         instrumentPicker.backgroundColor = [UIColor whiteColor];
         [soundControlView addSubview:instrumentPicker];
 
-        rateSlider = [[UISlider alloc] initWithFrame:soundControlView.frame];
-        SET_VIEW_Y(rateSlider, BELOW(instrumentPicker.frame) + SEP);
+#define RATE_LABEL_FONT_SIZE    SMALL_LABEL_FONT_SIZE
+#define RATE_H          (RATE_LABEL_FONT_SIZE*3.5)
+        
+#define RATE_LABEL_W    ((RATE_LABEL_FONT_SIZE*0.8)*16)
+        
+        rateLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, BELOW(instrumentPicker.frame) + SEP,
+                                                              RATE_LABEL_W, RATE_H)];
+        rateLabel.attributedText = nil;
+        rateLabel.font = [UIFont systemFontOfSize:RATE_LABEL_FONT_SIZE];
+        rateLabel.lineBreakMode = NSLineBreakByWordWrapping;
+        rateLabel.numberOfLines = 0;
+        rateLabel.backgroundColor = [UIColor whiteColor];
+        [self showRate];
+        [soundControlView addSubview:rateLabel];
+
+        rateSlider = [[UISlider alloc] initWithFrame:rateLabel.frame];
+        SET_VIEW_X(rateSlider, RIGHT(rateLabel.frame) + SEP);
+        SET_VIEW_WIDTH(rateSlider, soundControlView.frame.size.width - rateSlider.frame.origin.x);
         rateSlider.minimumValue = 24;   // Larghissimo
         rateSlider.maximumValue = 200;  // Prestissimo
         rateSlider.value = playOptions.beatsPerMinute;
         [rateSlider addTarget:self action:@selector(doChangeRate:) forControlEvents:UIControlEventValueChanged];
-//        rateSlider.layer.borderWidth = 0.5;
-//        rateSlider.layer.borderColor = [UIColor yellowColor].CGColor;
- //       rateSlider.layer.cornerRadius = 5.0;
+        rateSlider.layer.borderWidth = 0.5;
+        rateSlider.layer.borderColor = [UIColor lightGrayColor].CGColor;
+        rateSlider.layer.cornerRadius = 5.0;
         [soundControlView addSubview:rateSlider];
 
-        SET_VIEW_HEIGHT(soundControlView, BELOW(rateSlider.frame));
-//        soundControlView.backgroundColor = [UIColor whiteColor];
-//        soundControlView.layer.borderWidth = 0.5;
-//        soundControlView.layer.borderColor = [UIColor blueColor].CGColor;
- //       soundControlView.layer.cornerRadius = 5.0;
+        SET_VIEW_HEIGHT(soundControlView, BELOW(rateSlider.frame) + SEP);
         [containerView addSubview:soundControlView];
         
         SET_VIEW_HEIGHT(containerView, BELOW(soundControlView.frame));
@@ -179,6 +193,52 @@
         self.view.backgroundColor = [UIColor whiteColor];
     }
     return self;
+}
+
+// table adopted from https://en.wikipedia.org/wiki/Tempo
+// Not perfect, but close enough
+
+static struct rateTable {
+    char *name;
+    int rate;       // fastest rate, except the last
+} rateTable[] = {
+    {"Larghissimo",    24},
+    {"Grave",    25},
+    {"Lento",    45},
+    {"Larghetto",    60},
+    {"Adagio",    66},
+    {"Andante",    76},
+    {"Andante moderato",    92},
+    {"Allegretto",    112},
+    {"Allegro moderato",    116},
+    {"Allegro",    120},
+    {"Vivace",    156},
+    {"Presto",    168},
+    {"Prestissimo",    200},
+    {0, 1000},
+};
+
+- (void) showRate {
+    UIFontDescriptor *fontDesc = [rateLabel.font.fontDescriptor
+                               fontDescriptorWithSymbolicTraits:UIFontDescriptorTraitItalic];
+    UIFont *italicsFont = [UIFont fontWithDescriptor:fontDesc size:rateLabel.font.pointSize];
+    NSDictionary *italicsAttributes = @{ NSFontAttributeName: italicsFont };
+    
+    NSMutableAttributedString *rateString = [[NSMutableAttributedString alloc]
+                                             initWithString:[NSString stringWithFormat:@"   ♩/min: %d\n  Tempo: ",
+                                                             playOptions.beatsPerMinute]];
+    int i;
+    for (i=0; rateTable[i].name; i++) {
+        if (playOptions.beatsPerMinute < rateTable[i+1].rate)
+            break;
+    }
+    NSMutableAttributedString *tempoName = [[NSMutableAttributedString alloc]
+                                            initWithString:[NSString stringWithUTF8String:rateTable[i].name]];
+    NSLog(@" name: %s", rateTable[i].name);
+    [tempoName setAttributes:italicsAttributes range:(NSRange){0,tempoName.length}];
+    [rateString appendAttributedString:tempoName];
+    rateLabel.attributedText = rateString;
+    [rateLabel setNeedsDisplay];
 }
 
 - (void)viewDidLoad {
@@ -456,6 +516,7 @@ numberOfRowsInComponent:(NSInteger)component {
     [playOptions save];
     NSLog(@"new rate: %d bpm", playOptions.beatsPerMinute);
     [self switchToNewPlayer];
+    [self showRate];
 }
 
 - (AVMIDIPlayer *) makePlayer { // from current instrument and rate settings
