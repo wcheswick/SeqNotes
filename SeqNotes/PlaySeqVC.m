@@ -564,7 +564,7 @@ numberOfRowsInComponent:(NSInteger)component {
 //
 // If we do this too fast, the kernel gets upset, so limit the update rate.
 
-#define MIN_UPDATE_TIME 0.25     // seconds
+#define MIN_UPDATE_TIME 0.80    // seconds
 
 - (void) switchToNewPlayer {
     NSTimeInterval dt = -[lastPlayerChange timeIntervalSinceNow];

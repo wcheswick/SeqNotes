@@ -135,7 +135,7 @@ seqToMidi(int ofd, long sequence[], size_t seqLen,
     if (bpm <= 0 || bpm >= 1000000) bpm=100;
     if (!name || !strlen(name)) name="Piano\\";
     if (vol <= 0 || vol > 127) vol=100;
-    if (voice <= 0 || voice >= 129) voice=1; // XXX need actual max
+    if (voice < 0 || voice > 127) voice=0; // XXX need actual max
     if (velon <= 0 || velon >= 128) velon = 80;
     if (veloff <= 0 || veloff >= 128) veloff = 80;
     if (pmod <= 0 || pmod > 128) pmod=88;
@@ -176,7 +176,7 @@ seqToMidi(int ofd, long sequence[], size_t seqLen,
         emit_var(0); emit_char(188); emit_char(6); emit_char(0);    // BC 07 chan 12 vol := 100
         emit_var(0); emit_char(188); emit_char(7); emit_char(vol);  // BC 40 chan 12 hold := off
         emit_var(0); emit_char(188); emit_char(64); emit_char(0);   // CC chan 12 to program 1 (piano)
-        emit_var(0); emit_char(204); emit_char(voice-1);
+        emit_var(0); emit_char(204); emit_char(voice);
     }
 
     size_t i, j;
