@@ -17,8 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface PlaySeqVC : UIViewController
     <UIScrollViewDelegate,
     MFMailComposeViewControllerDelegate,
-    UIPickerViewDataSource,
-    UIPickerViewDelegate,
+    UITableViewDelegate, UITableViewDataSource,
     PositionProtocol,
     midiSequenceProtocol>
 

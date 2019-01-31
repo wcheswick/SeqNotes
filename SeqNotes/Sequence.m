@@ -241,7 +241,7 @@
 - (NSString *)fetchOEISMidiFor:(PlayOptions *)options
                         target:(id<midiSequenceProtocol>)caller {
     NSString *midiPath = [self pathToMIDIWithOptions:options];
-    if (NO && [[NSFileManager defaultManager] fileExistsAtPath:midiPath]) {
+    if ([[NSFileManager defaultManager] fileExistsAtPath:midiPath]) {
         NSLog(@"** returning cached OEIS MIDI");
         return midiPath;
     }

@@ -24,6 +24,7 @@
 		FB99422A21C58B9E009A30E4 /* PlaySeqVC.m in Sources */ = {isa = PBXBuildFile; fileRef = FB99422521C58B9E009A30E4 /* PlaySeqVC.m */; };
 		FB99422B21C58B9E009A30E4 /* Sequence.m in Sources */ = {isa = PBXBuildFile; fileRef = FB99422621C58B9E009A30E4 /* Sequence.m */; };
 		FB99422C21C58B9E009A30E4 /* UICircularProgressView.m in Sources */ = {isa = PBXBuildFile; fileRef = FB99422921C58B9E009A30E4 /* UICircularProgressView.m */; };
+		FBCD5E7321FDDBEE005E9D14 /* instprefs in Resources */ = {isa = PBXBuildFile; fileRef = FBCD5E7221FDDBEE005E9D14 /* instprefs */; };
 		FBDC07A521CD8CA000A7F0FF /* SeqThumbView.m in Sources */ = {isa = PBXBuildFile; fileRef = FBDC07A421CD8CA000A7F0FF /* SeqThumbView.m */; };
 		FBEBED3D21CD2AF000D41433 /* Music.txt in Resources */ = {isa = PBXBuildFile; fileRef = FBEBED3C21CD2AC200D41433 /* Music.txt */; };
 		FBEBED3E21CD319600D41433 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FB340FC521CC3BDD00126A3C /* Assets.xcassets */; };
@@ -64,6 +65,7 @@
 		FB99422721C58B9E009A30E4 /* PlaySeqVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PlaySeqVC.h; sourceTree = "<group>"; };
 		FB99422821C58B9E009A30E4 /* UICircularProgressView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UICircularProgressView.h; sourceTree = "<group>"; };
 		FB99422921C58B9E009A30E4 /* UICircularProgressView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UICircularProgressView.m; sourceTree = "<group>"; };
+		FBCD5E7221FDDBEE005E9D14 /* instprefs */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = instprefs; sourceTree = "<group>"; };
 		FBDC07A321CD8CA000A7F0FF /* SeqThumbView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SeqThumbView.h; sourceTree = "<group>"; };
 		FBDC07A421CD8CA000A7F0FF /* SeqThumbView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SeqThumbView.m; sourceTree = "<group>"; };
 		FBEBED3C21CD2AC200D41433 /* Music.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = Music.txt; sourceTree = "<group>"; };
@@ -103,6 +105,7 @@
 				FBEBED3C21CD2AC200D41433 /* Music.txt */,
 				FB36C5DA21CAFB33004E7EFE /* InstrumentList */,
 				FB36C5D621CAE5F5004E7EFE /* GeneralUser GS MuseScore v1.442.sf2 */,
+				FBCD5E7221FDDBEE005E9D14 /* instprefs */,
 			);
 			path = "MIDI support";
 			sourceTree = "<group>";
@@ -249,6 +252,7 @@
 				FB36C5D721CAE5F5004E7EFE /* GeneralUser GS MuseScore v1.442.sf2 in Resources */,
 				FB3C268221F612BF00EE144D /* rightnote.png in Resources */,
 				FB08BDA521D13D9D009307AA /* ear.jpg in Resources */,
+				FBCD5E7321FDDBEE005E9D14 /* instprefs in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

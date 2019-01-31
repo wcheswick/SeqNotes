@@ -23,13 +23,14 @@
 @property (nonatomic, strong)   UIScrollView *scrollView;
 @property (nonatomic, strong)   PositionView *positionView;
 @property (nonatomic, strong)   UIProgressView *progressView;
-@property (nonatomic, strong)   AVMIDIPlayer *player;
+@property (nonatomic, strong)   AVMIDIPlayer *player, *pendingPlayer;
 @property (nonatomic, strong)   UIButton *play;
 @property (nonatomic, strong)   NSTimer *checkProgressTimer;
 @property (nonatomic, strong)   NSDate *lastPlayerChange;
 @property (nonatomic, strong)   NSMutableArray *instrumentList;
 @property (nonatomic, strong)   NSMutableDictionary *instrumentNamesToIndex;
-@property (nonatomic, strong)   UIPickerView *instrumentPicker;
+@property (nonatomic, strong)   NSMutableArray *preferredList;
+@property (nonatomic, strong)   UITableView *instrumentTable;
 @property (nonatomic, strong)   PlayOptions *playOptions;
 @property (nonatomic, strong)   NSOperationQueue *playerOp;
 @property (nonatomic, strong)   UISlider *rateSlider;
@@ -47,9 +48,10 @@
 @synthesize checkProgressTimer, lastPlayerChange;
 @synthesize positionView;
 @synthesize recallPlayerChangeTimer;
-@synthesize player, play;
+@synthesize player, pendingPlayer, play;
 @synthesize instrumentList, instrumentNamesToIndex;
-@synthesize instrumentPicker;
+@synthesize preferredList;
+@synthesize instrumentTable;
 @synthesize playOptions;
 @synthesize playerOp;
 @synthesize rateSlider;
@@ -61,8 +63,12 @@
     if (self) {
         sequence = s;
         playerOp = nil;
+        pendingPlayer = nil;
+        player = nil;
+        
         // these must not be released until we are done with a player switch
         [self loadInstruments];
+        preferredList = nil;
         
         playOptions = [NSKeyedUnarchiver unarchiveObjectWithFile:PLAY_OPTIONS_ARCHIVE];
         if (!playOptions) {
@@ -111,24 +117,26 @@
         positionView.backgroundColor = [UIColor greenColor];
         [soundControlView addSubview:positionView];
 
+#define INST_TABLE_H    300
+        
         // The picker chooses its own height
-        instrumentPicker = [[UIPickerView alloc] init];
-        SET_VIEW_Y(instrumentPicker, BELOW(soundControlView.frame));
-        SET_VIEW_X(instrumentPicker, (containerView.frame.size.width - instrumentPicker.frame.size.width)/2.0);
-        instrumentPicker.delegate = self;
-        [instrumentPicker selectRow:playOptions.instrumentIndex inComponent:0 animated:NO];
-//        instrumentPicker.layer.borderWidth = 0.5;
-//        instrumentPicker.layer.borderColor = [UIColor orangeColor].CGColor;
- //       instrumentPicker.layer.cornerRadius = 5.0;
-        instrumentPicker.backgroundColor = [UIColor whiteColor];
-        [soundControlView addSubview:instrumentPicker];
+        instrumentTable = [[UITableView alloc] initWithFrame:CGRectMake(0, BELOW(soundControlView.frame) + 2*SEP,
+                                                                        soundControlView.frame.size.width, INST_TABLE_H)
+                                                       style:UITableViewStyleGrouped];
+        instrumentTable.delegate = self;
+        instrumentTable.dataSource = self;
+        instrumentTable.layer.borderWidth = 0.5;
+        instrumentTable.layer.borderColor = [UIColor lightGrayColor].CGColor;
+        instrumentTable.layer.cornerRadius = 2.0;
+        instrumentTable.backgroundColor = [UIColor whiteColor];
+        [soundControlView addSubview:instrumentTable];
 
 #define RATE_LABEL_FONT_SIZE    SMALL_LABEL_FONT_SIZE
 #define RATE_H          (RATE_LABEL_FONT_SIZE*3.5)
         
 #define RATE_LABEL_W    ((RATE_LABEL_FONT_SIZE*0.8)*16)
         
-        rateLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, BELOW(instrumentPicker.frame) + SEP,
+        rateLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, BELOW(instrumentTable.frame) + 2*SEP,
                                                               RATE_LABEL_W, RATE_H)];
         rateLabel.attributedText = nil;
         rateLabel.font = [UIFont systemFontOfSize:RATE_LABEL_FONT_SIZE];
@@ -195,6 +203,60 @@
     return self;
 }
 
+#define INST_TAG    10000
+
+- (UITableViewCell *)tableView:(UITableView *)tableView
+         cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    static NSString *CellIdentifier = @"InstrumentCell";
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
+    if (cell == nil) {
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault
+                                      reuseIdentifier:CellIdentifier];
+    }
+    cell.selectionStyle = UITableViewCellSelectionStyleBlue;
+    size_t instIndex;
+    if (tableView.numberOfSections == 2 && indexPath.section == 0) {
+        NSNumber *n = [NSNumber numberWithInteger: indexPath.row];
+        NSNumber *ni = [instrumentNamesToIndex objectForKey:n];
+        instIndex = [ni intValue];
+    } else
+        instIndex = indexPath.row;
+    
+    cell.textLabel.text = [NSString stringWithFormat:@"%3d  %@", (int)instIndex+1,
+                           [instrumentList objectAtIndex:instIndex]];
+    cell.tag = INST_TAG + instIndex;
+    //            cell.accessoryType = options.onlyInRange ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone;
+    return cell;
+}
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+    if (!preferredList || preferredList.count == 0)
+        return 1;
+    else
+        return 2;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView
+ numberOfRowsInSection:(NSInteger)section {
+    if (tableView.numberOfSections == 2)
+        return preferredList.count;
+    return instrumentList.count;
+}
+
+- (NSString *)tableView:(UITableView *)tableView
+titleForHeaderInSection:(NSInteger)section {
+    if (tableView.numberOfSections == 2 && section == 0)
+        return @"Suggested instruments:";
+    return @"Instruments:";
+}
+
+- (void) tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+    playOptions.instrumentIndex = (int)(cell.tag - INST_TAG);
+    [playOptions save];
+    [self switchToNewPlayer];
+}
+
 // table adopted from https://en.wikipedia.org/wiki/Tempo
 // Not perfect, but close enough
 
@@ -257,19 +319,20 @@ static struct rateTable {
                                       target:self action:@selector(doDone:)];
     self.navigationItem.leftBarButtonItem = leftBarButton;
     SET_VIEW_Y(self.view, BELOW(self.navigationController.navigationBar.frame));
+    
+    [instrumentTable reloadData];
     NSLog(@"svc vdl: %@", NSStringFromCGRect(self.view.frame));
 }
 
 - (void) viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     
-    CGFloat top = self.navigationController.navigationBar.frame.size.height;
-    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone) {
-        top += [UIApplication sharedApplication].statusBarFrame.size.height;
-    }
-    SET_VIEW_Y(containerView, top);
+    SET_VIEW_Y(self.view, BELOW(self.navigationController.navigationBar.frame));
+    SET_VIEW_HEIGHT(self.view, self.view.frame.size.height - self.view.frame.origin.y);
+    SET_VIEW_HEIGHT(containerView, self.view.frame.size.height - self.view.frame.origin.y);
 }
 
+#ifdef OLD
 #define PICKER_W    200
 
 - (CGFloat)pickerView:(UIPickerView *)pickerView
@@ -305,35 +368,18 @@ numberOfRowsInComponent:(NSInteger)component {
     [playOptions save];
     [self switchToNewPlayer];
 }
+#endif
 
 - (IBAction)doPlay:(UIView *)sender {
-    if (!play.selected) {
-        if (!player) {
-            player = [self makePlayer];
+    if (player) {
+        if (player.playing) {   // playing, we want to pause
+            [self pausePlayer];
+        } else {    // resume current player
+            [self startOrResumePlaying];
         }
-        if (player.currentPosition >= player.duration) {
-            player.currentPosition = 0;
-            [self showCurrentPlayingPosition];
-        }
-        [self startPlayer];
     } else {
-        [self pausePlayer];
-    }
-}
-
-- (IBAction)doPlayOEIS:(UIView *)sender {
-    if (!play.selected) {
-        if (!player) {
-            player = [self makePlayer];
-        }
-        if (player.currentPosition >= player.duration) {
-            NSLog(@"reset position to start");
-            player.currentPosition = 0;
-            [self showCurrentPlayingPosition];
-        }
-        [self startPlayer];
-    } else {
-        [self pausePlayer];
+        pendingPlayer = [self makePlayer];
+        [self startOrResumePlaying];
     }
 }
 
@@ -555,7 +601,7 @@ numberOfRowsInComponent:(NSInteger)component {
         NSLog(@"player initialization error: %@", [error localizedDescription]);
         return nil;
     }
-    NSLog(@"New player ...");
+    NSLog(@"New player made...");
     return newPlayer;
 }
 
@@ -567,6 +613,55 @@ numberOfRowsInComponent:(NSInteger)component {
 #define MIN_UPDATE_TIME 0.80    // seconds
 
 - (void) switchToNewPlayer {
+    pendingPlayer = [self makePlayer];
+    if (player) {
+        if (player.playing) {
+            [player stop];  // player will call back
+            return;
+        }
+    }
+    [self startOrResumePlaying];
+}
+
+- (void) startOrResumePlaying {
+    positionView.duration = player.duration;
+    positionView.position = player.currentPosition;
+    
+    if (player) {
+        NSLog(@"starting a player with a player playing");
+        assert(!player.playing);
+    }
+    if (pendingPlayer) {
+        NSLog(@"switching to new player");
+        player = pendingPlayer;
+        player.currentPosition = pendingPlayer.currentPosition;
+        pendingPlayer = nil;
+    }
+    playerOp = [[NSOperationQueue alloc] init];
+    [playerOp addOperationWithBlock: ^{
+        NSLog(@"start/resume playing at %.3f", self.player.currentPosition);
+        [self.player play:^(void) {
+            NSLog(@"player stopped%@", self.pendingPlayer ? @" new player pending" : @"");
+            if (self.pendingPlayer) {
+                dispatch_async(dispatch_get_main_queue(), ^(void) {
+                    self.pendingPlayer.currentPosition = self.player.currentPosition;
+                    [self startOrResumePlaying];
+                });
+            }
+        }];
+    }];
+    
+    [self showCurrentPlayingPosition];
+    self.play.selected = YES;
+    [self.play setNeedsDisplay];
+    self.checkProgressTimer = [NSTimer scheduledTimerWithTimeInterval:1.0
+                                                               target:self
+                                                             selector:@selector(tick)
+                                                             userInfo:nil
+                                                              repeats:YES];
+}
+
+#ifdef notdef
     NSTimeInterval dt = -[lastPlayerChange timeIntervalSinceNow];
     if (lastPlayerChange && dt < MIN_UPDATE_TIME) {    // wait a bit
         NSLog(@"player change too fast, need %.3f seconds", MIN_UPDATE_TIME - dt);
@@ -598,35 +693,13 @@ numberOfRowsInComponent:(NSInteger)component {
     player.currentPosition = currentPosition >= 0 ? currentPosition : 0;
     [self startPlayer];
 }
+#endif
 
 - (IBAction)playerUpdateOK:(id)sender {
     NSTimer *caller = (NSTimer *)sender;
     NSLog(@"delayed switch to new player");
     [caller invalidate];
     [self switchToNewPlayer];
-}
-
-- (void) startPlayer {
-    positionView.duration = player.duration;
-    positionView.position = player.currentPosition;
-    playerOp = [[NSOperationQueue alloc] init];
-    [playerOp addOperationWithBlock: ^{
-        NSLog(@"start/resume playing at %.3f", self.player.currentPosition);
-        [self.player play:^(void) {
-            //            NSLog(@"playing complete");
-            //            dispatch_async(dispatch_get_main_queue(), ^(void) {
-            //                [self pausePlayer];
-        }];
-    }];
-    
-    [self showCurrentPlayingPosition];
-    self.play.selected = YES;
-    [self.play setNeedsDisplay];
-    self.checkProgressTimer = [NSTimer scheduledTimerWithTimeInterval:1.0
-                                                               target:self
-                                                             selector:@selector(tick)
-                                                             userInfo:nil
-                                                              repeats:YES];
 }
 
 - (void) tick {

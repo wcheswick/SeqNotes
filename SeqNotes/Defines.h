@@ -73,18 +73,4 @@
 f.origin.x = ((v).frame.size.width - f.size.width)/2.0; \
 (cv).frame = f;}
 
-#ifdef notdef
-tempi from http://www.musiccrashcourses.com/lessons/beat.html
-
-grave    40        solemn; very, very slow
-largo    50        broad; very slow
-adagio    60-70    quite slow
-andante    80-100    walking pace
-moderato        110    moderate
-allegro    120-160    fast
-vivace    140        lively
-presto    180        very fast
-
-#endif
-
 #endif /* Defines_h */

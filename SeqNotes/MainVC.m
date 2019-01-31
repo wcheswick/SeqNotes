@@ -137,16 +137,14 @@ static NSString * const reuseIdentifier = @"Cell";
     if (thumbsAcross == 0) {    // doesn't fit, iPhone
         thumbsAcross = 1;
         thumbWidth = self.view.frame.size.width - 2*INSET;
-    } else {
-        int smallerThumbsAcross = (self.view.frame.size.width -
-                                   layout.minimumInteritemSpacing)/
-                            (MIN_THUMB_WIDTH + layout.minimumInteritemSpacing);
-        if (smallerThumbsAcross > thumbsAcross)
-            thumbsAcross = smallerThumbsAcross;
-        thumbWidth = ((self.view.frame.size.width - INSET) / thumbsAcross)
-             - thumbsAcross*INSET;
-    }
-//    NSLog(@"thumbs across: %d, thumb width: %.1f", thumbsAcross, thumbWidth);
+    } int smallerThumbsAcross = (self.view.frame.size.width -
+                                 layout.minimumInteritemSpacing)/
+    (MIN_THUMB_WIDTH + layout.minimumInteritemSpacing);
+    if (smallerThumbsAcross > thumbsAcross)
+        thumbsAcross = smallerThumbsAcross;
+    thumbWidth = ((self.view.frame.size.width - INSET) / thumbsAcross)
+    - thumbsAcross*INSET;
+    //    NSLog(@"thumbs across: %d, thumb width: %.1f", thumbsAcross, thumbWidth);
     collectionView.frame = CGRectInset(self.view.frame, INSET, INSET);
 }
 
